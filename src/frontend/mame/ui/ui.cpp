@@ -1394,7 +1394,7 @@ std::vector<ui::menu_item> mame_ui_manager::slider_init(running_machine &machine
 		}
 	}
 
-	// add CPU overclocking (cheat only)
+	// add CPU using (cheat only)
 	slider_index = 0;
 	if (machine.options().cheat())
 	{
@@ -1402,18 +1402,20 @@ std::vector<ui::menu_item> mame_ui_manager::slider_init(running_machine &machine
 		{
 			void *param = (void *)&exec.device();
 			std::string str = string_format(_("Overclock CPU %1$s"), exec.device().tag());
-			sliders.push_back(slider_alloc(machine, SLIDER_ID_OVERCLOCK + slider_index++, str.c_str(), 10, 1000, 2000, 1, param));
+			//sliders.push_back(slider_alloc(machine, SLIDER_ID_OVERCLOCK + slider_index++, str.c_str(), 10, 1000, 2000, 1, param));
+			sliders.push_back(slider_alloc(machine, SLIDER_ID_OVERCLOCK + slider_index++, str.c_str(), 100, 1000, 5000, 100, param));
 		}
-		for (device_sound_interface &snd : sound_interface_iterator(machine.root_device()))
-		{
-			device_execute_interface *exec;
-			if (!snd.device().interface(exec) && snd.device().unscaled_clock() != 0)
-			{
-				void *param = (void *)&snd.device();
-				std::string str = string_format(_("Overclock %1$s sound"), snd.device().tag());
-				sliders.push_back(slider_alloc(machine, SLIDER_ID_OVERCLOCK + slider_index++, str.c_str(), 10, 1000, 2000, 1, param));
-			}
-		}
+		//for (device_sound_interface &snd : sound_interface_iterator(machine.root_device()))
+		//{
+			//device_execute_interface *exec;
+			//if (!snd.device().interface(exec) && snd.device().unscaled_clock() != 0)
+			//{
+			//	void *param = (void *)&snd.device();
+			//	std::string str = string_format(_("Overclock %1$s sound"), snd.device().tag());
+				//sliders.push_back(slider_alloc(machine, SLIDER_ID_OVERCLOCK + slider_index++, str.c_str(), 10, 1000, 2000, 1, param));
+			//	sliders.push_back(slider_alloc(machine, SLIDER_ID_OVERCLOCK + slider_index++, str.c_str(), 100, 1000, 5000, 100, param));
+			//}
+		//}
 	}
 
 	// add screen parameters
@@ -1432,7 +1434,8 @@ std::vector<ui::menu_item> mame_ui_manager::slider_init(running_machine &machine
 		if (machine.options().cheat())
 		{
 			std::string str = string_format(_("%1$s Refresh Rate"), screen_desc);
-			sliders.push_back(slider_alloc(machine, SLIDER_ID_REFRESH + slider_index, str.c_str(), -10000, 0, 10000, 1000, param));
+			//sliders.push_back(slider_alloc(machine, SLIDER_ID_REFRESH + slider_index, str.c_str(), -10000, 0, 10000, 1000, param));
+			sliders.push_back(slider_alloc(machine, SLIDER_ID_REFRESH + slider_index, str.c_str(), -50000, 0, 60000, 1000, param));
 		}
 
 		// add standard brightness/contrast/gamma controls per-screen
@@ -1444,14 +1447,23 @@ std::vector<ui::menu_item> mame_ui_manager::slider_init(running_machine &machine
 		sliders.push_back(slider_alloc(machine, SLIDER_ID_GAMMA + slider_index, str.c_str(), 100, 1000, 3000, 50, param));
 
 		// add scale and offset controls per-screen
-		str = string_format(_("%1$s Horiz Stretch"), screen_desc);
-		sliders.push_back(slider_alloc(machine, SLIDER_ID_XSCALE + slider_index, str.c_str(), 500, defxscale, 1500, 2, param));
-		str = string_format(_("%1$s Horiz Position"), screen_desc);
-		sliders.push_back(slider_alloc(machine, SLIDER_ID_XOFFSET + slider_index, str.c_str(), -500, defxoffset, 500, 2, param));
-		str = string_format(_("%1$s Vert Stretch"), screen_desc);
-		sliders.push_back(slider_alloc(machine, SLIDER_ID_YSCALE + slider_index, str.c_str(), 500, defyscale, 1500, 2, param));
-		str = string_format(_("%1$s Vert Position"), screen_desc);
-		sliders.push_back(slider_alloc(machine, SLIDER_ID_YOFFSET + slider_index, str.c_str(), -500, defyoffset, 500, 2, param));
+		//str = string_format(_("%1$s Horiz Stretch"), screen_desc);
+		str = string_format(_("%1$s Width: TV Standard <-> Stretch Fill"), screen_desc);
+		//sliders.push_back(slider_alloc(machine, SLIDER_ID_XSCALE + slider_index, str.c_str(), 500, defxscale, 1500, 2, param));
+		sliders.push_back(slider_alloc(machine, SLIDER_ID_XSCALE + slider_index, str.c_str(), 910, defxscale, 1000, 90, param));
+		//str = string_format(_("%1$s Horiz Position"), screen_desc);
+		str = string_format(_("%1$s Horizontal Position: Left Justify <-> Center <-> Right Justify"), screen_desc);
+		//sliders.push_back(slider_alloc(machine, SLIDER_ID_XOFFSET + slider_index, str.c_str(), -500, defxoffset, 500, 2, param));
+		sliders.push_back(slider_alloc(machine, SLIDER_ID_XOFFSET + slider_index, str.c_str(), -022, defxoffset, 022, 18, param));
+		//str = string_format(_("%1$s Vert Position"), screen_desc);
+		str = string_format(_("%1$s Vertical Position: Off-Center High <-> Center <-> Off-Center Low"), screen_desc);
+		//sliders.push_back(slider_alloc(machine, SLIDER_ID_YOFFSET + slider_index, str.c_str(), -500, defyoffset, 500, 2, param));
+		sliders.push_back(slider_alloc(machine, SLIDER_ID_YOFFSET + slider_index, str.c_str(), -032, defyoffset, 000, 13, param));
+		//str = string_format(_("%1$s Vert Stretch"), screen_desc);
+		//str = string_format(_("%1$s Crop: Off <-> Lo <-> AvgL <-> AvgH <-> Hi <-> Ex <-> Max"), screen_desc);
+		str = string_format(_("%1$s Height Lines Cropped: 0 <-> 8 <-> 16 <-> 24 <-> 32 <-> 40 <-> 48"), screen_desc);
+		//sliders.push_back(slider_alloc(machine, SLIDER_ID_YSCALE + slider_index, str.c_str(), 500, defyscale, 1500, 2, param));
+		sliders.push_back(slider_alloc(machine, SLIDER_ID_YSCALE + slider_index, str.c_str(), 1000, defyscale, 1216, 36, param));	
 		slider_index++;
 	}
 
