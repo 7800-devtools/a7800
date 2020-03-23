@@ -6,5 +6,12 @@
 *.pyo
 *.rej
 .DS_Store
-
-
+3rdparty/genie/bin/
+3rdparty/genie/build/gmake.linux/obj/
+build/
+src/devices/cpu/m68000/m68kmake
+src/devices/cpu/m68000/m68kmake.o
+src/devices/cpu/m68000/m68kops.cpp
+src/devices/cpu/m68000/m68kops.h
+mame64
+a7800
