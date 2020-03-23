@@ -1,4 +1,6 @@
 #ifndef __glxext_h_
+#if !defined(__glx_glxext_h_) && !defined(__glxext_h_)
+#define __glx_glxext_h_ 1
 #define __glxext_h_ 1
 
 #ifdef __cplusplus
@@ -835,4 +837,5 @@ Status glXGetTransparentIndexSUN (Display *dpy, Window overlay, Window underlay,
 }
 #endif
 
+#endif
 #endif
