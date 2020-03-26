@@ -303,6 +303,7 @@ private:
 
 	void poly_init_4_5(uint32_t *poly, int size, int xorbit, int invert);
 	void poly_init_9_17(uint32_t *poly, int size);
+
 	void vol_init();
 
 	inline void process_channel(int ch);

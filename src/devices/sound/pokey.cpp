@@ -77,7 +77,7 @@
 #define VERBOSE         0
 #define VERBOSE_SOUND   0
 #define VERBOSE_TIMER   0
-#define VERBOSE_POLY    0
+#define VERBOSE_POLY    1
 #define VERBOSE_RAND    0
 
 #define LOG(x) do { if (VERBOSE) logerror x; } while (0)
@@ -143,7 +143,7 @@
 /* SKCTL (W/D20F) */
 #define SK_BREAK    0x80    /* serial out break signal */
 #define SK_BPS      0x70    /* bits per second */
-#define SK_FM       0x08    /* FM mode */
+#define SK_TWOTONE  0x08    /* Two tone mode */
 #define SK_PADDLE   0x04    /* fast paddle a/d conversion */
 #define SK_RESET    0x03    /* reset serial/keyboard interface */
 #define SK_KEYSCAN  0x02    /* key scanning enabled ? */
@@ -233,6 +233,9 @@ void pokey_device::device_start()
 	poly_init_9_17(m_poly9,   9);
 	poly_init_9_17(m_poly17, 17);
 	vol_init();
+
+	for(i=0;i<4;i++)
+		m_channel[i].m_AUDC = 0xB0;
 
 	/* The pokey does not have a reset line. These should be initialized
 	 * with random values.
@@ -447,7 +450,6 @@ void pokey_device::execute_run()
 		uint32_t new_out = step_one_clock();
 		if (m_output != new_out)
 		{
-			//printf("forced update %08d %08x\n", m_icount, m_output);
 			m_stream->update();
 			m_output = new_out;
 		}
@@ -633,6 +635,8 @@ uint32_t pokey_device::step_one_clock(void)
 		int isJoined = (m_AUDCTL & CH12_JOINED);
 		if (isJoined)
 			m_channel[CHAN1].reset_channel();
+		if (m_SKCTL & SK_TWOTONE)
+			m_channel[CHAN1].reset_channel();
 		m_channel[CHAN2].reset_channel();
 		process_channel(CHAN2);
 
@@ -648,7 +652,9 @@ uint32_t pokey_device::step_one_clock(void)
 			m_channel[CHAN2].inc_chan();
 		else
 			m_channel[CHAN1].reset_channel();
+			
 		process_channel(CHAN1);
+
 		/* check if some of the requested timer interrupts are enabled */
 		if ((m_IRQST & IRQ_TIMR1) && !m_irq_f.isnull())
 			m_irq_f(IRQ_TIMR1);
@@ -950,6 +956,19 @@ void pokey_device::write_internal(offs_t offset, uint8_t data)
 		LOG_SOUND(("POKEY '%s' AUDCTL $%02x (%s)\n", tag(), data, audctl2str(data)));
 		m_AUDCTL = data;
 
+/*
+		printf(" POKEY AUDCTL=0x%02x%s%s%s%s%s%s%s%s\n"
+		, m_AUDCTL
+                , m_AUDCTL & 0x80 ? ", 9-bit poly" : ", 17-bit poly"
+                , m_AUDCTL & 0x40 ? ", 1.79 ch1" : ""
+                , m_AUDCTL & 0x20 ? ", 1.79 ch3" : ""
+                , m_AUDCTL & 0x10 ? ", ch1+ch2" : ""
+                , m_AUDCTL & 0x08 ? ", ch3+ch4" : ""
+                , m_AUDCTL & 0x04 ? ", highpass 1+3" : ""
+                , m_AUDCTL & 0x02 ? ", highpass 2+4" : ""
+                , m_AUDCTL & 0x01 ? ", 15KHz" : ", 64KHz");
+*/
+
 		break;
 
 	case STIMER_C:
@@ -1038,6 +1057,13 @@ void pokey_device::write_internal(offs_t offset, uint8_t data)
 			m_clock_cnt[2] = 0;
 			/* FIXME: Serial port reset ! */
 		}
+/*
+		printf(" POKEY SKCTL=0x%02x%s%s%s\n"
+		, m_SKCTL
+		, m_SKCTL & 0x80 ? ", force break" : ""
+		, m_SKCTL & 0x08 ? ", two-tone mode" : ""
+		, m_SKCTL & 0x04 ? ", fast pot scan" : "");
+*/
 		break;
 	}
 
@@ -1074,6 +1100,21 @@ void pokey_device::serin_ready(int after)
 
 inline void pokey_device::process_channel(int ch)
 {
+	if (m_SKCTL & SK_TWOTONE)
+	{
+		if (ch==CHAN2)
+		{
+			m_channel[ch].m_output ^= 1;
+			return;
+		}
+		if (ch==CHAN1)
+		{
+			// we channel 1 only toggles when channel 2 is high
+			if (m_channel[CHAN2].m_output==1)
+				m_channel[ch].m_output ^= 1;
+			return;
+		}
+	}
 	if ((m_channel[ch].m_AUDC & NOTPOLY5) || (m_poly5[m_p5] & 1))
 	{
 		if (m_channel[ch].m_AUDC & PURE)
@@ -1168,28 +1209,27 @@ void pokey_device::vol_init()
 
 void pokey_device::poly_init_4_5(uint32_t *poly, int size, int xorbit, int invert)
 {
-	int mask = (1 << size) - 1;
-	int i;
-	uint32_t lfsr = 0;
+        int mask = (1 << size) - 1;
+        int i;
+        uint32_t lfsr = 0;
 
-	LOG_POLY(("poly %d\n", size));
-	for( i = 0; i < mask; i++ )
-	{
-		/* calculate next bit */
-		int in = !((lfsr >> 0) & 1) ^ ((lfsr >> xorbit) & 1);
-		lfsr = lfsr >> 1;
-		lfsr = (in << (size-1)) | lfsr;
-		*poly = lfsr ^ invert;
-		LOG_POLY(("%05x: %02x\n", i, *poly));
-		poly++;
-	}
+        LOG_POLY(("poly %d\n", size));
+        for( i = 0; i < mask; i++ )
+        {
+                /* calculate next bit */
+                int in = !((lfsr >> 0) & 1) ^ ((lfsr >> xorbit) & 1);
+                lfsr = lfsr >> 1;
+                lfsr = (in << (size-1)) | lfsr;
+                *poly = lfsr ^ invert;
+                LOG_POLY(("%05x: %02x\n", i, *poly));
+                poly++;
+        }
 }
 
 void pokey_device::poly_init_9_17(uint32_t *poly, int size)
 {
 	int mask = (1 << size) - 1;
-	int i;
-	uint32_t lfsr =mask;
+	int i, x=0;
 
 	LOG_RAND(("rand %d\n", size));
 
@@ -1197,14 +1237,8 @@ void pokey_device::poly_init_9_17(uint32_t *poly, int size)
 	{
 		for( i = 0; i < mask; i++ )
 		{
-			/* calculate next bit @ 7 */
-			int in8 = ((lfsr >> 8) & 1) ^ ((lfsr >> 13) & 1);
-			int in = (lfsr & 1);
-			lfsr = lfsr >> 1;
-			lfsr = (lfsr & 0xff7f) | (in8 << 7);
-			lfsr = (in << 16) | lfsr;
-			*poly = lfsr;
-			LOG_RAND(("%05x: %02x\n", i, *poly));
+			x = (x >> 1) + (~((x << 16) ^ (x << 11)) & 0x10000);
+			*poly = (x & mask) ^ mask;
 			poly++;
 		}
 	}
@@ -1212,16 +1246,12 @@ void pokey_device::poly_init_9_17(uint32_t *poly, int size)
 	{
 		for( i = 0; i < mask; i++ )
 		{
-			/* calculate next bit */
-			int in = ((lfsr >> 0) & 1) ^ ((lfsr >> 5) & 1);
-			lfsr = lfsr >> 1;
-			lfsr = (in << 8) | lfsr;
-			*poly = lfsr;
-			LOG_RAND(("%05x: %02x\n", i, *poly));
+			x = (x >> 1) + (~((x << 8) ^ (x << 3)) & 0x100);
+			*poly = (x & mask) ^ mask;
 			poly++;
+			
 		}
 	}
-
 }
 
 char *pokey_device::audc2str(int val)
