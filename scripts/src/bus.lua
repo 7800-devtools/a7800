@@ -23,8 +23,8 @@ if (BUSES["A7800"]~=null) then
 		MAME_DIR .. "src/devices/bus/a7800/rom.h",
 		MAME_DIR .. "src/devices/bus/a7800/hiscore.cpp",
 		MAME_DIR .. "src/devices/bus/a7800/hiscore.h",
-		MAME_DIR .. "src/devices/bus/a7800/xboard.cpp",
-		MAME_DIR .. "src/devices/bus/a7800/xboard.h",
+		MAME_DIR .. "src/devices/bus/a7800/xm.cpp",
+		MAME_DIR .. "src/devices/bus/a7800/xm.h",
 		MAME_DIR .. "src/devices/bus/a7800/cpuwiz.cpp",
 		MAME_DIR .. "src/devices/bus/a7800/cpuwiz.h",
 	}

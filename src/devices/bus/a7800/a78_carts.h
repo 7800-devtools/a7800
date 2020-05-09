@@ -6,7 +6,7 @@
 #pragma once
 
 #include "rom.h"
-#include "xboard.h"
+#include "xm.h"
 #include "hiscore.h"
 #include "cpuwiz.h"
 
@@ -21,7 +21,6 @@ static SLOT_INTERFACE_START(a7800_cart)
 	SLOT_INTERFACE_INTERNAL("a78_abs",      A78_ROM_ABSOLUTE)
 	SLOT_INTERFACE_INTERNAL("a78_act",      A78_ROM_ACTIVISION)
 	SLOT_INTERFACE_INTERNAL("a78_hsc",      A78_HISCORE)
-	SLOT_INTERFACE_INTERNAL("a78_xboard",   A78_XBOARD) // the actual XBoarD expansion (as passthru)
 	SLOT_INTERFACE_INTERNAL("a78_xm",       A78_XM)     // the actual XM expansion (as passthru)
 	SLOT_INTERFACE_INTERNAL("a78_megacart", A78_ROM_MEGACART)
 	SLOT_INTERFACE_INTERNAL("a78_versa",    A78_ROM_VERSABOARD)

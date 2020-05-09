@@ -300,7 +300,6 @@ static const a78_slot slot_list[] =
 	{ A78_ABSOLUTE,   "a78_abs" },
 	{ A78_ACTIVISION, "a78_act" },
 	{ A78_HSC,        "a78_hsc" },
-	{ A78_XB_BOARD,   "a78_xboard" },
 	{ A78_XM_BOARD,   "a78_xm" },
 	{ A78_MEGACART,   "a78_megacart" },
 	{ A78_VERSABOARD, "a78_versa" },
@@ -440,7 +439,7 @@ image_init_result a78_cart_slot_device::call_load()
 
 			if (head[63])
 			{
-				osd_printf_info("This cart requires XBoarD / XM expansion\n");
+				osd_printf_info("This cart requires XM expansion\n");
 				osd_printf_info("Run it through the expansion to exploit this feature.\n");
 			}
 
@@ -453,7 +452,7 @@ image_init_result a78_cart_slot_device::call_load()
 				m_cart->ram_alloc(0x4000);
 			if (m_type == A78_MEGACART || (m_type >= A78_VERSABOARD && m_type <= A78_VERSA_POK450))
 				m_cart->ram_alloc(0x8000);
-			if (m_type == A78_XB_BOARD || m_type == A78_XM_BOARD)
+			if (m_type == A78_XM_BOARD)
 				m_cart->ram_alloc(0x20000);
 			if (m_type == A78_HSC || m_type == A78_XM_BOARD)
 			{
