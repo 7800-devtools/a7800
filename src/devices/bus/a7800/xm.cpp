@@ -114,10 +114,10 @@ MACHINE_CONFIG_END
 
 READ8_MEMBER(a78_xm_device::read_40xx)
 {
-        if (BIT(m_cntrl1, 5) && offset < 0x2000)
-                return m_ram[ (offset + ((m_cntrl2&15) * 0x4000)) ];
-        else if (BIT(m_cntrl1, 6) && offset >0x1ffff && offset < 0x4000)
-                return m_ram[ (offset + (((m_cntrl2>>4)&15) * 0x4000)) ];
+        if (BIT(m_cntrl1,5) && offset < 0x2000)
+                return m_ram[ (offset&0x1fff) + (((m_cntrl2&15) * 0x2000)) ];
+        else if ( BIT(m_cntrl1,6) && offset >= 0x2000 && offset < 0x4000)
+                return m_ram[ (offset&0x1fff) + ((((m_cntrl2>>4)&15) * 0x2000)) ];
         else
                 return m_xmslot->read_40xx(space, offset);
 	// TODO: implement ROF bits in cntrl1
@@ -126,9 +126,9 @@ READ8_MEMBER(a78_xm_device::read_40xx)
 WRITE8_MEMBER(a78_xm_device::write_40xx)
 {
         if (BIT(m_cntrl1, 5) && offset < 0x2000)
-                m_ram[ (offset + ((m_cntrl2&15) * 0x4000)) ] = data;
-        else if (BIT(m_cntrl1, 6) && offset >0x1ffff && offset < 0x4000)
-                m_ram[ (offset + (((m_cntrl2>>4)&15) * 0x4000)) ] = data;
+                m_ram[ (offset) + (((m_cntrl2&15) * 0x2000)) ] = data;
+        else if (BIT(m_cntrl1,6) && offset >= 0x2000 && offset < 0x4000)
+                 m_ram[ offset + ((((m_cntrl2>>4)&15) * 0x2000)) ] = data;
         else
                 m_xmslot->write_40xx(space, offset, data);
 	// TODO: implement ROF bits in cntrl1
