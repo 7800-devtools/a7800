@@ -115,12 +115,11 @@ MACHINE_CONFIG_END
 READ8_MEMBER(a78_xm_device::read_40xx)
 {
         if (BIT(m_cntrl1,5) && offset < 0x2000)
-                return m_ram[ (offset&0x1fff) + (((m_cntrl2&15) * 0x2000)) ];
+                return m_ram[ ((offset&0x1fff) + (((m_cntrl2&15) * 0x2000))) | ((m_cntrl1&1)<<8) ];
         else if ( BIT(m_cntrl1,6) && offset >= 0x2000 && offset < 0x4000)
-                return m_ram[ (offset&0x1fff) + ((((m_cntrl2>>4)&15) * 0x2000)) ];
+                return m_ram[ ((offset&0x1fff) + ((((m_cntrl2>>4)&15) * 0x2000))) | ((m_cntrl1&2)<<7) ];
         else
                 return m_xmslot->read_40xx(space, offset);
-	// TODO: implement ROF bits in cntrl1
 }
 
 WRITE8_MEMBER(a78_xm_device::write_40xx)
@@ -135,18 +134,18 @@ WRITE8_MEMBER(a78_xm_device::write_40xx)
 }
 
 
+// FIXME: We allow the NVRAM to be read+write without regard to the cntrl1 register.
+// If HSC is disabled, when the base NVRAM device gets loaded, it won't be setup correctly.
+// Worse, any existing save of the NVRAM will be overwritten with empty data.
+
 READ8_MEMBER(a78_xm_device::read_10xx)
 {
-	if (BIT(m_cntrl1, 3))
-		return m_nvram[offset];
-	else
-		return 0xff;
+	return m_nvram[offset];
 }
 
 WRITE8_MEMBER(a78_xm_device::write_10xx)
 {
-	if (BIT(m_cntrl1, 3))
-		m_nvram[offset] = data;
+	m_nvram[offset] = data;
 }
 
 READ8_MEMBER(a78_xm_device::read_30xx)
