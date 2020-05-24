@@ -54,6 +54,7 @@
 #include "a78_carts.h"
 #include "speaker.h"
 
+extern int m_dmaactive;
 
 //-------------------------------------------------
 //  constructor
@@ -117,9 +118,19 @@ READ8_MEMBER(a78_xm_device::read_40xx)
 	if (!BIT(m_cntrl5,0))
         {
 		if (BIT(m_cntrl1,5) && offset < 0x2000)
-			return m_ram[ ((offset&0x1fff) + (((m_cntrl2&15) * 0x2000))) | ((m_cntrl1&1)<<8) ];
+		{
+			if(m_dmaactive)
+				return m_ram[ ((offset&0x1fff) + (((m_cntrl3&15) * 0x2000))) | ((m_cntrl1&1)<<8) ];
+			else
+				return m_ram[ ((offset&0x1fff) + (((m_cntrl2&15) * 0x2000))) | ((m_cntrl1&1)<<8) ];
+		}
 		else if ( BIT(m_cntrl1,6) && offset >= 0x2000 && offset < 0x4000)
-			return m_ram[ ((offset&0x1fff) + ((((m_cntrl2>>4)&15) * 0x2000))) | ((m_cntrl1&2)<<7) ];
+		{
+			if(m_dmaactive)
+				return m_ram[ ((offset&0x1fff) + ((((m_cntrl3>>4)&15) * 0x2000))) | ((m_cntrl1&2)<<7) ];
+			else
+				return m_ram[ ((offset&0x1fff) + ((((m_cntrl2>>4)&15) * 0x2000))) | ((m_cntrl1&2)<<7) ];
+		}
 		else
 			return m_xmslot->read_40xx(space, offset);
         }

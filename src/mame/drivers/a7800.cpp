@@ -117,6 +117,8 @@
 #define A7800_NTSC_Y1   XTAL_14_31818MHz
 #define CLK_PAL 1773447
 
+// FIXME: global used to pass info between a7800 driver and bus devices
+int m_dmaactive; 
 
 class a7800_state : public driver_device
 {
@@ -460,7 +462,9 @@ TIMER_DEVICE_CALLBACK_MEMBER(a7800_state::interrupt)
 
 TIMER_CALLBACK_MEMBER(a7800_state::maria_startdma)
 {
+	m_dmaactive = 1;
 	m_maria->startdma(m_lines);
+	m_dmaactive = 0;
 }
 
 
