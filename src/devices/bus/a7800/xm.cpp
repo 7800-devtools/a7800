@@ -145,9 +145,9 @@ WRITE8_MEMBER(a78_xm_device::write_40xx)
 		if (!BIT(m_cntrl5,0))
         	{
 			if (BIT(m_cntrl1, 5) && offset < 0x2000)
-				m_ram[ (offset) + (((m_cntrl2&15) * 0x2000)) ] = data;
+				m_ram[ (offset&0x1fff) + (((m_cntrl2&15) * 0x2000)) ] = data;
 			else if (BIT(m_cntrl1,6) && offset >= 0x2000 && offset < 0x4000)
-				m_ram[ offset + ((((m_cntrl2>>4)&15) * 0x2000)) ] = data;
+				m_ram[ (offset&0x1fff) + ((((m_cntrl2>>4)&15) * 0x2000)) ] = data;
 			else
 				m_xmslot->write_40xx(space, offset, data);
 		}
