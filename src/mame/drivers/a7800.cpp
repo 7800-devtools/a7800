@@ -445,7 +445,7 @@ WRITE8_MEMBER(a7800_state::tia_w)
 			paddle_start = machine().device<cpu_device>("maincpu")->total_cycles();
 		}
 	}
-	else
+	else if (m_cart->exists())
 		m_tia->tia_sound_w(space, offset, data);
 
 }
