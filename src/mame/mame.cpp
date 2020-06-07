@@ -13,8 +13,8 @@
 #define APPNAME                 "A7800"
 #define APPNAME_LOWER           "a7800"
 #define CONFIGNAME              "a7800"
-#define COPYRIGHT               "Copyright Mike Saarna\nand Team A7800\nhttp://7800.8bitdev.org/index.php/A7800_Emulator"
-#define COPYRIGHT_INFO          "Copyright Mike Saarna and Team A7800"
+#define COPYRIGHT               "Copyright Mike Saarna\nMAME Team\nand Team A7800\nhttp://7800.8bitdev.org/index.php/A7800_Emulator"
+#define COPYRIGHT_INFO          "Copyright Mike Saarna, MAME Team, and Team A7800"
 
 const char * emulator_info::get_appname() { return APPNAME;}
 const char * emulator_info::get_appname_lower() { return APPNAME_LOWER;}
