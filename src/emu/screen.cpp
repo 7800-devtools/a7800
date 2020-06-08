@@ -625,7 +625,7 @@ void screen_device::static_set_raw(device_t &device, u32 pixclock, u16 htotal, u
 {
 	screen_device &screen = downcast<screen_device &>(device);
 	screen.m_clock = pixclock;
-	screen.m_refresh = HZ_TO_ATTOSECONDS(pixclock) * htotal * vtotal;
+	screen.m_refresh = HZ_TO_ATTOSECONDS(60);
 	screen.m_vblank = screen.m_refresh / vtotal * (vtotal - (vbstart - vbend));
 	screen.m_width = htotal;
 	screen.m_height = vtotal;
