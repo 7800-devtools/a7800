@@ -274,7 +274,7 @@ READ8_MEMBER(a7800_state::tia_r)
 				   is always a bit different from game to game, so we'll invariably wind up with
 				   some wasted digital paddle-range and an in-game non-centered center point. */
 				elapsed = (machine().device<cpu_device>("maincpu")->total_cycles() - paddle_start)/97;
-				if ( elapsed > m_joy1->pot_x_r() )
+				if ( elapsed > (m_joy1->pot_x_r()^0xff) )
 					return 0x80;
 				else
 					return 0x00;
@@ -289,7 +289,7 @@ READ8_MEMBER(a7800_state::tia_r)
 				   is always a bit different from game to game, so we'll invariably wind up with
 				   some wasted digital paddle-range and an in-game non-centered center point. */
 				elapsed = (machine().device<cpu_device>("maincpu")->total_cycles() - paddle_start)/97;
-				if ( elapsed > m_joy1->pot_y_r() )
+				if ( elapsed > (m_joy1->pot_y_r()^0xff) )
 					return 0x80;
 				else
 					return 0x00;
@@ -319,7 +319,7 @@ READ8_MEMBER(a7800_state::tia_r)
 				   is always a bit different from game to game, so we'll invariably wind up with
 				   some wasted digital paddle-range and an in-game non-centered center point. */
 				elapsed = (machine().device<cpu_device>("maincpu")->total_cycles() - paddle_start)/97;
-				if ( elapsed > m_joy2->pot_y_r() )
+				if ( elapsed > (m_joy2->pot_y_r()^0xff) )
 					return 0x80;
 				else
 					return 0x00;
