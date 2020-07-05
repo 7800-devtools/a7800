@@ -1164,13 +1164,14 @@ static MACHINE_CONFIG_START( a7800_ntsc )
 	MCFG_TIMER_DRIVER_ADD_SCANLINE("scantimer", a7800_state, interrupt, "screen", 0, 1)
 
 	/* video hardware */
-	MCFG_SCREEN_ADD("screen", RASTER)
-	//MCFG_SCREEN_RAW_PARAMS( 7159090, 454, 0, 320, 263, 27, 27 + 192 + 32 )
-	MCFG_SCREEN_RAW_PARAMS( 7159090, 454, 0, 320, 263, 16, 16 + 243 -3 )
-	/*Exact Frame Timing per updated 7800 Software Guide which is 
-	  verified through hardware testing.  Actual number of possible 
-	  visible lines is 243, but we subtract 3 for the sake of rounding
-	  to an even number that follows NTSC standard resolution*/
+	MCFG_SCREEN_ADD( "screen", RASTER)
+	MCFG_SCREEN_RAW_PARAMS( 7159090, 454, 0, 320, 263, 16, 16 + 243 )
+	/*Exact Frame Timing per updated 7800 Software Guide which is
+	  verified through hardware testing.  Actual number of possible
+	  visible lines is 243*/
+	MCFG_SCREEN_VISIBLE_AREA( 0, 319, 16, 239 + 16 )
+	MCFG_SCREEN_REFRESH_RATE(60)
+
 	MCFG_SCREEN_DEFAULT_POSITION( 0.910, 0.000, 1.072, -0.013 )
 	MCFG_SCREEN_UPDATE_DEVICE("maria", atari_maria_device, screen_update)
 	MCFG_SCREEN_PALETTE("palette")
@@ -1212,12 +1213,13 @@ static MACHINE_CONFIG_DERIVED( a7800_pal, a7800_ntsc )
 //  MCFG_TIMER_ADD_SCANLINE("scantimer", a7800_interrupt, "screen", 0, 1)
 
 	MCFG_SCREEN_MODIFY( "screen" )
-	//MCFG_SCREEN_RAW_PARAMS( 7093788, 454, 0, 320, 313, 35, 35 + 228 + 32 )
-	MCFG_SCREEN_RAW_PARAMS( 7093788, 454, 0, 320, 313, 16, 16 + 293 -5 ) 
-	/*Exact Frame Timing per updated 7800 Software Guide which is 
-	  verified through hardware testing.  Actual number of possible 
-	  visible lines is 293, but we subtract 5 for the sake of rounding
-	  to an even number that follows PAL standard resolution*/
+	MCFG_SCREEN_RAW_PARAMS( 7093788, 454, 0, 320, 313, 16, 16 + 293 )
+	/*Exact Frame Timing per updated 7800 Software Guide which is
+	  verified through hardware testing.  Actual number of possible
+	  visible lines is 293*/	
+	MCFG_SCREEN_VISIBLE_AREA( 0, 319, 16, 287 + 16 )
+	MCFG_SCREEN_REFRESH_RATE(50)
+
 	MCFG_SCREEN_DEFAULT_POSITION( 0.910, 0.000, 1.108, -0.013 )
 	MCFG_PALETTE_MODIFY("palette")
 	MCFG_PALETTE_INIT_OWNER(a7800_state, a7800p )
@@ -1261,9 +1263,12 @@ static MACHINE_CONFIG_DERIVED( a7800u1_pal, a7800_ntsc )
 //  MCFG_TIMER_ADD_SCANLINE("scantimer", a7800_interrupt, "screen", 0, 1)
 
 	MCFG_SCREEN_MODIFY( "screen" )
-	//MCFG_SCREEN_RAW_PARAMS( 7093788, 454, 0, 320, 313, 35, 35 + 228 + 32 )
-	MCFG_SCREEN_RAW_PARAMS( 7093788, 454, 0, 320, 313, 16, 16 + 293 -5 )
-	MCFG_SCREEN_DEFAULT_POSITION( 0.910, 0.000, 1.108, -0.013 )
+	MCFG_SCREEN_RAW_PARAMS( 7093788, 454, 0, 320, 313, 16, 16 + 293 )
+	/*Exact Frame Timing per updated 7800 Software Guide which is
+	  verified through hardware testing.  Actual number of possible
+	  visible lines is 293*/	
+	MCFG_SCREEN_VISIBLE_AREA( 0, 319, 16, 287 + 16 )
+	MCFG_SCREEN_REFRESH_RATE(50)
 
 	MCFG_PALETTE_MODIFY("palette")
 	MCFG_PALETTE_INIT_OWNER(a7800_state, a7800pu1 )
@@ -1291,9 +1296,13 @@ static MACHINE_CONFIG_DERIVED( a7800u2_pal, a7800_ntsc )
 //  MCFG_TIMER_ADD_SCANLINE("scantimer", a7800_interrupt, "screen", 0, 1)
 
 	MCFG_SCREEN_MODIFY( "screen" )
-	//MCFG_SCREEN_RAW_PARAMS( 7093788, 454, 0, 320, 313, 35, 35 + 228 + 32 )
-	MCFG_SCREEN_RAW_PARAMS( 7093788, 454, 0, 320, 313, 16, 16 + 293 -5 )
-	MCFG_SCREEN_DEFAULT_POSITION( 0.910, 0.000, 1.108, -0.013 )
+	MCFG_SCREEN_RAW_PARAMS( 7093788, 454, 0, 320, 313, 16, 16 + 293 )
+	/*Exact Frame Timing per updated 7800 Software Guide which is
+	  verified through hardware testing.  Actual number of possible
+	  visible lines is 293*/	
+	MCFG_SCREEN_VISIBLE_AREA( 0, 319, 16, 287 + 16 )
+	MCFG_SCREEN_REFRESH_RATE(50)
+	
 	MCFG_PALETTE_MODIFY("palette")
 	MCFG_PALETTE_INIT_OWNER(a7800_state, a7800pu2 )
 
