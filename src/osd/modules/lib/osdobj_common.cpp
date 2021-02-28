@@ -50,7 +50,8 @@ const options_entry osd_options::s_option_entries[] =
 
 	{ nullptr,                                nullptr,          OPTION_HEADER,    "OSD VIDEO OPTIONS" },
 // OS X can be trusted to have working hardware OpenGL, so default to it on for the best user experience
-	{ OSDOPTION_VIDEO,                        OSDOPTVAL_AUTO,   OPTION_STRING,    "video output method: " },
+	//{ OSDOPTION_VIDEO,                        OSDOPTVAL_AUTO,   OPTION_STRING,    "video output method: " },
+	{ OSDOPTION_VIDEO,                        "bgfx",           OPTION_STRING,    "video output method: " },
 	{ OSDOPTION_NUMSCREENS "(1-4)",           "1",              OPTION_INTEGER,   "number of screens to create; usually, you want just one" },
 	//{ OSDOPTION_WINDOW ";w",                  "0",              OPTION_BOOLEAN,   "enable window mode; otherwise, full screen mode is assumed" },
 	{ OSDOPTION_WINDOW ";w",                  "1",              OPTION_BOOLEAN,   "enable window mode; otherwise, full screen mode is assumed" },
@@ -91,7 +92,8 @@ const options_entry osd_options::s_option_entries[] =
 	{ OSDOPTION_SWITCHRES,                    "0",              OPTION_BOOLEAN,   "enable resolution switching" },
 
 	{ nullptr,                                nullptr,          OPTION_HEADER,    "OSD ACCELERATED VIDEO OPTIONS" },
-	{ OSDOPTION_FILTER ";glfilter;flt",       "1",              OPTION_BOOLEAN,   "enable bilinear filtering on screen output" },
+	//{ OSDOPTION_FILTER ";glfilter;flt",       "1",              OPTION_BOOLEAN,   "enable bilinear filtering on screen output" },
+	{ OSDOPTION_FILTER ";glfilter;flt",       "0",              OPTION_BOOLEAN,   "enable bilinear filtering on screen output" },
 	{ OSDOPTION_PRESCALE,                     "1",              OPTION_INTEGER,   "scale screen rendering by this amount in software" },
 
 #if USE_OPENGL
@@ -155,7 +157,8 @@ const options_entry osd_options::s_option_entries[] =
 	{ OSDOPTION_BGFX_BACKEND,                 "auto",            OPTION_STRING, "BGFX backend to use (d3d9, d3d11, metal, opengl, gles)" },
 	{ OSDOPTION_BGFX_DEBUG,                   "0",               OPTION_BOOLEAN, "enable BGFX debugging statistics" },
 	//{ OSDOPTION_BGFX_SCREEN_CHAINS,           "default",         OPTION_STRING, "comma-delimited list of screen chain JSON names, colon-delimited per-window" },
-	{ OSDOPTION_BGFX_SCREEN_CHAINS,           "hlsl",         OPTION_STRING, "comma-delimited list of screen chain JSON names, colon-delimited per-window" },
+	//{ OSDOPTION_BGFX_SCREEN_CHAINS,           "hlsl",         OPTION_STRING, "comma-delimited list of screen chain JSON names, colon-delimited per-window" },
+	{ OSDOPTION_BGFX_SCREEN_CHAINS,           "none",         OPTION_STRING, "comma-delimited list of screen chain JSON names, colon-delimited per-window" },
 	{ OSDOPTION_BGFX_SHADOW_MASK,             "slot-mask.png",   OPTION_STRING, "shadow mask texture name" },
 	{ OSDOPTION_BGFX_AVI_NAME,                OSDOPTVAL_AUTO,    OPTION_STRING, "filename for BGFX output logging" },
 
