@@ -42,7 +42,6 @@ private:
 	int m_offset;
 	int m_vblank;
 	int m_dmaon;
-	int m_dmaon_s;
 	int m_dpp;
 	int m_wsync;
 	int m_color_kill;
