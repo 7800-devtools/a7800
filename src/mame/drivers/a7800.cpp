@@ -140,6 +140,8 @@ public:
 	int m_lines;
 	int m_ispal;
 
+	int m_pixelx;
+
 	int m_ctrl_lock;
 	int m_ctrl_reg;
 	int m_maria_flag;
@@ -167,6 +169,7 @@ public:
 	DECLARE_PALETTE_INIT(a7800pu2);
 	TIMER_DEVICE_CALLBACK_MEMBER(interrupt);
 	TIMER_CALLBACK_MEMBER(maria_startdma);
+	TIMER_CALLBACK_MEMBER(maria_startvisible);
 	DECLARE_READ8_MEMBER(riot_joystick_r);
 	DECLARE_WRITE8_MEMBER(riot_joystick_w);
 	DECLARE_READ8_MEMBER(riot_console_button_r);
@@ -409,6 +412,7 @@ WRITE8_MEMBER(a7800_state::tia_w)
 	   wait 0.5 cycles, and instead wait for 1 cycle every 2x TIA accesses. Without this fix
 	   our 6502 on-screen position is severely skewed. */
 	if ((m_joy1->is_lightgun())||(m_joy2->is_lightgun()))
+	//if (0==0)
 	{
 		tia_delay++;
 		if(tia_delay==2)
@@ -458,6 +462,10 @@ TIMER_DEVICE_CALLBACK_MEMBER(a7800_state::interrupt)
 	// DMA Begins 7 cycles after hblank
 	machine().scheduler().timer_set(m_maincpu->cycles_to_attotime(7), timer_expired_delegate(FUNC(a7800_state::maria_startdma),this));
 	m_maria->interrupt(m_lines);
+
+	// Visible pixels begin after 33.5 cycles...
+	machine().scheduler().timer_set(m_maincpu->cycles_to_attotime(67)/2, timer_expired_delegate(FUNC(a7800_state::maria_startvisible),this));
+	m_pixelx=0;
 }
 
 TIMER_CALLBACK_MEMBER(a7800_state::maria_startdma)
@@ -467,7 +475,13 @@ TIMER_CALLBACK_MEMBER(a7800_state::maria_startdma)
 	m_dmaactive = 0;
 }
 
-
+TIMER_CALLBACK_MEMBER(a7800_state::maria_startvisible)
+{
+	m_maria->display_visible(m_pixelx);
+	m_pixelx++;
+	if(m_pixelx<160)
+		machine().scheduler().timer_set(m_maincpu->cycles_to_attotime(1)/2, timer_expired_delegate(FUNC(a7800_state::maria_startvisible),this));
+}
 
 // ROM
 READ8_MEMBER(a7800_state::bios_or_cart_r)

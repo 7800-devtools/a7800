@@ -18,6 +18,7 @@ public:
 
 	void interrupt(int lines);
 	void startdma(int lines);
+	void display_visible(int pixelx);
 
 	DECLARE_READ8_MEMBER(read);
 	DECLARE_WRITE8_MEMBER(write);
