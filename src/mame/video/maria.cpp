@@ -84,6 +84,7 @@ void atari_maria_device::device_start()
 	save_item(NAME(m_offset));
 	save_item(NAME(m_vblank));
 	save_item(NAME(m_dmaon));
+	save_item(NAME(m_dmaon_s));
 	save_item(NAME(m_dpp));
 	save_item(NAME(m_wsync));
 	save_item(NAME(m_color_kill));
@@ -108,6 +109,7 @@ void atari_maria_device::device_reset()
 
 	m_write_mode = 0;
 	m_dmaon = 0;
+	m_dmaon_s = 0;
 	m_vblank = 0x80;
 	m_dll = 0;
 	m_wsync = 0;
@@ -182,6 +184,8 @@ void atari_maria_device::draw_scanline()
 	int c, cells;
 	int maria_cycles;
 	int dma_hole_known;
+
+	m_dmaon = m_dmaon_s; // dma enable/disable is latched 
 
 	for (int i = 0; i < 160; i++) // working buffer cleared
 		m_line_ram[m_active_buffer][i] = 0;
@@ -474,11 +478,11 @@ WRITE8_MEMBER(atari_maria_device::write)
 					break;
 
 				case 0x02:
-					m_dmaon = 1;
+					m_dmaon_s = 1;
 					break;
 
 				case 0x03:
-					m_dmaon = 0;
+					m_dmaon_s = 0;
 					break;
 			}
 			m_cwidth = data & 0x10;

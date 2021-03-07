@@ -412,7 +412,6 @@ WRITE8_MEMBER(a7800_state::tia_w)
 	   wait 0.5 cycles, and instead wait for 1 cycle every 2x TIA accesses. Without this fix
 	   our 6502 on-screen position is severely skewed. */
 	if ((m_joy1->is_lightgun())||(m_joy2->is_lightgun()))
-	//if (0==0)
 	{
 		tia_delay++;
 		if(tia_delay==2)
