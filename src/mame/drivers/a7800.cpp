@@ -113,9 +113,8 @@
 #include "softlist.h"
 #include "speaker.h"
 
-
-#define A7800_NTSC_Y1   XTAL_14_31818MHz
-#define CLK_PAL 1773447
+#define CLK_NTSC  1789772
+#define CLK_PAL   1773447
 
 // FIXME: global used to pass info between a7800 driver and bus devices
 int m_dmaactive; 
@@ -241,6 +240,8 @@ READ8_MEMBER(a7800_state::tia_r)
 	uint64_t elapsed; 
 	int16_t cpu_x, cpu_y;
 	int16_t gun_x, gun_y;
+
+	//m_maincpu->spin_until_time(m_maincpu->cycles_to_attotime(1)/2);
 
 	/* For now we only apply the 0.5 cycle penalty to lightgun games, where it's required.
 	   Other games (mostly paddle) may jitter from frame to frame, because we can't actually 
@@ -407,6 +408,8 @@ WRITE8_MEMBER(a7800_state::tia_w)
 {
 	static uint8_t paddle_is_grounded = 0;
 
+	//m_maincpu->spin_until_time(m_maincpu->cycles_to_attotime(1)/2);
+
 	/* For now we only apply the 0.5 cycle penalty to lightgun games, where it's required.
 	   Other games (mostly paddle) may jitter from frame to frame, because we can't actually 
 	   wait 0.5 cycles, and instead wait for 1 cycle every 2x TIA accesses. Without this fix
@@ -460,11 +463,12 @@ TIMER_DEVICE_CALLBACK_MEMBER(a7800_state::interrupt)
 {
 	// DMA Begins 7 cycles after hblank
 	machine().scheduler().timer_set(m_maincpu->cycles_to_attotime(7), timer_expired_delegate(FUNC(a7800_state::maria_startdma),this));
-	m_maria->interrupt(m_lines);
 
 	// Visible pixels begin after 33.5 cycles...
 	machine().scheduler().timer_set(m_maincpu->cycles_to_attotime(67)/2, timer_expired_delegate(FUNC(a7800_state::maria_startvisible),this));
 	m_pixelx=0;
+
+	m_maria->interrupt(m_lines);
 }
 
 TIMER_CALLBACK_MEMBER(a7800_state::maria_startdma)
@@ -1172,20 +1176,22 @@ void a7800_state::machine_reset()
 
 static MACHINE_CONFIG_START( a7800_ntsc )
 	/* basic machine hardware */
-	MCFG_CPU_ADD("maincpu", M6502, A7800_NTSC_Y1/8) /* 1.79 MHz (switches to 1.19 MHz on TIA or RIOT RAM access) */
+	MCFG_CPU_ADD("maincpu", M6502, CLK_NTSC) /* 1.79 MHz (switches to 1.19 MHz on TIA or RIOT RAM access) */
 	MCFG_CPU_PROGRAM_MAP(a7800_mem)
 	MCFG_TIMER_DRIVER_ADD_SCANLINE("scantimer", a7800_state, interrupt, "screen", 0, 1)
 
 	/* video hardware */
 	MCFG_SCREEN_ADD( "screen", RASTER)
-	MCFG_SCREEN_RAW_PARAMS( 7159090, 454, 0, 320, 263, 16, 16 + 243 )
+
+	// use 456 instead of actual 454, because the MAME 6502 jitters with fractional clocks.
+	MCFG_SCREEN_RAW_PARAMS( CLK_NTSC*4, 456, 0, 320, 263, 16, 16 + 243 )
+
 	/*Exact Frame Timing per updated 7800 Software Guide which is
 	  verified through hardware testing.  Actual number of possible
 	  visible lines is 243*/
-	MCFG_SCREEN_VISIBLE_AREA( 0, 319, 16, 239 + 16 )
-	MCFG_SCREEN_REFRESH_RATE(60)
+	//MCFG_SCREEN_VISIBLE_AREA( 0, 319, 16, 239 + 16 )
+	//MCFG_SCREEN_REFRESH_RATE(60)
 
-	//MCFG_SCREEN_DEFAULT_POSITION( 1.000, 0.000, 1.072, 0.000 )
 	MCFG_SCREEN_DEFAULT_POSITION( 1.000, 0.000, 1.000, 0.000 )
 	MCFG_SCREEN_UPDATE_DEVICE("maria", atari_maria_device, screen_update)
 	MCFG_SCREEN_PALETTE("palette")
@@ -1202,7 +1208,7 @@ static MACHINE_CONFIG_START( a7800_ntsc )
 	MCFG_SOUND_ROUTE(ALL_OUTPUTS, "mono", 1.00)
 
 	/* devices */
-    MCFG_DEVICE_ADD("riot", RIOT6532, A7800_NTSC_Y1/8)
+    MCFG_DEVICE_ADD("riot", RIOT6532, CLK_NTSC)
 	MCFG_RIOT6532_IN_PA_CB(READ8(a7800_state, riot_joystick_r))
 	MCFG_RIOT6532_OUT_PA_CB(WRITE8(a7800_state, riot_joystick_w))
 	MCFG_RIOT6532_IN_PB_CB(READ8(a7800_state, riot_console_button_r))
@@ -1227,14 +1233,14 @@ static MACHINE_CONFIG_DERIVED( a7800_pal, a7800_ntsc )
 //  MCFG_TIMER_ADD_SCANLINE("scantimer", a7800_interrupt, "screen", 0, 1)
 
 	MCFG_SCREEN_MODIFY( "screen" )
-	MCFG_SCREEN_RAW_PARAMS( 7093788, 454, 0, 320, 313, 16, 16 + 293 )
+	MCFG_SCREEN_RAW_PARAMS( CLK_PAL*4, 454, 0, 320, 313, 16, 16 + 293 )
+
 	/*Exact Frame Timing per updated 7800 Software Guide which is
 	  verified through hardware testing.  Actual number of possible
 	  visible lines is 293*/	
-	MCFG_SCREEN_VISIBLE_AREA( 0, 319, 16, 287 + 16 )
-	MCFG_SCREEN_REFRESH_RATE(50)
+	//MCFG_SCREEN_VISIBLE_AREA( 0, 319, 16, 287 + 16 )
+	//MCFG_SCREEN_REFRESH_RATE(50)
 
-	//MCFG_SCREEN_DEFAULT_POSITION( 1.000, 0.000, 1.108, 0.000 )
 	MCFG_SCREEN_DEFAULT_POSITION( 1.000, 0.000, 1.000, 0.000 )
 	MCFG_PALETTE_MODIFY("palette")
 	MCFG_PALETTE_INIT_OWNER(a7800_state, a7800p )

@@ -203,6 +203,7 @@ void atari_maria_device::draw_scanline()
 
 		while (((READ_MEM(dl + 1) & 0x5f) != 0) && (maria_cycles<DMALIMIT))
 		{
+
 			/* Extended header */
 			if (!(READ_MEM(dl + 1) & 0x1f))
 			{
@@ -285,13 +286,6 @@ void atari_maria_device::draw_scanline()
 		if (m_offset == 0)
 			maria_cycles += 8; // extra shutdown time
 
-		// If MARIA used up all of the DMA time then the CPU can't run until next line...
-		if (maria_cycles>=DMALIMIT)
-		{
-			m_cpu->spin_until_trigger(TRIGGER_HSYNC);
-			m_wsync = 1;
-		}
-
 		// Spin the CPU for Maria DMA, if it's not already spinning for WSYNC.
 		// MARIA generates the 6502 clock by dividing its own clock by 4. It needs to HALT and unHALT
 		// the 6502 on ths same clock phase, so MARIA will wait until its clock divides evenly by 4.
@@ -349,6 +343,13 @@ void atari_maria_device::display_visible(int pixelx)
 
 void atari_maria_device::interrupt(int lines)
 {
+	// Fix the pixel clock. This is a kludge, because when Mame gets a scanline width
+	// that isn't an even amount of cpu clocks, the clock jitters. 
+	// To work around that we make the scanline width an even number of clock, and 
+	// then we spin the CPU at hblank one half clock to correct.
+
+	m_cpu->spin_until_time(m_cpu->cycles_to_attotime(1)/2);
+
 	if (m_wsync)
 	{
 		machine().scheduler().trigger(TRIGGER_HSYNC);
@@ -367,8 +368,7 @@ void atari_maria_device::interrupt(int lines)
 void atari_maria_device::startdma(int lines)
 {
 	address_space& space = m_cpu->space(AS_PROGRAM);
-	int maria_scanline = m_screen->vpos();
-	int frame_scanline = maria_scanline % (lines + 1);
+	int frame_scanline = m_screen->vpos();
 
 	m_active_buffer = !m_active_buffer; // switch active buffer at start of DMA
 
@@ -406,9 +406,16 @@ void atari_maria_device::startdma(int lines)
 
 	if (m_nmi)
 	{
-		m_cpu->set_input_line(INPUT_LINE_NMI, PULSE_LINE);
-		m_nmi = 0;
+		// NMI isn't raised until 2 post-DMA CPU cycles
+		machine().scheduler().timer_set(m_cpu->cycles_to_attotime(2), timer_expired_delegate(FUNC(atari_maria_device::raisenmi),this));
 	}
+}
+
+TIMER_CALLBACK_MEMBER(atari_maria_device::raisenmi)
+{
+		if (m_wsync == 0)
+			m_cpu->set_input_line(INPUT_LINE_NMI, PULSE_LINE);
+		m_nmi = 0;
 }
 
 /***************************************************************************
