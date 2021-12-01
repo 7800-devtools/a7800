@@ -9,6 +9,7 @@
 #include "xm.h"
 #include "hiscore.h"
 #include "cpuwiz.h"
+#include "bankset.h"
 
 static SLOT_INTERFACE_START(a7800_cart)
 	SLOT_INTERFACE_INTERNAL("a78_rom",      A78_ROM)
@@ -22,6 +23,8 @@ static SLOT_INTERFACE_START(a7800_cart)
 	SLOT_INTERFACE_INTERNAL("a78_act",      A78_ROM_ACTIVISION)
 	SLOT_INTERFACE_INTERNAL("a78_hsc",      A78_HISCORE)
 	SLOT_INTERFACE_INTERNAL("a78_xm",       A78_XM)     // the actual XM expansion (as passthru)
+	SLOT_INTERFACE_INTERNAL("a78_bankset_sg",    A78_ROM_BANKSET_SG)
+	SLOT_INTERFACE_INTERNAL("a78_bankset_sg_bankram",    A78_ROM_BANKSET_SG_BANKRAM)
 	SLOT_INTERFACE_INTERNAL("a78_megacart", A78_ROM_MEGACART)
 	SLOT_INTERFACE_INTERNAL("a78_versa",    A78_ROM_VERSABOARD)
 	// cart variants with a POKEY at 0x0450 (typically a VersaBoard variant, or an homebrew pcb)

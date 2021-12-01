@@ -261,7 +261,7 @@ int a78_cart_slot_device::validate_header(int head, bool log) const
 		head &= 0xff00;
 	}
 
-	if ((head & 0xff00) > 0x300)
+	if ((head & 0xff00) > 0x2000)
 	{
 		if (log)
 		{
@@ -301,6 +301,8 @@ static const a78_slot slot_list[] =
 	{ A78_ACTIVISION, "a78_act" },
 	{ A78_HSC,        "a78_hsc" },
 	{ A78_XM_BOARD,   "a78_xm" },
+	{ A78_BANKSET_SG,   "a78_bankset_sg" },
+	{ A78_BANKSET_SG_BANKRAM,   "a78_bankset_sg_bankram" },
 	{ A78_MEGACART,   "a78_megacart" },
 	{ A78_VERSABOARD, "a78_versa" },
 	{ A78_TYPE0_POK450, "a78_p450_t0" },
@@ -381,7 +383,7 @@ image_init_result a78_cart_slot_device::call_load()
 			// let's try to auto-fix some common errors in the header
 			mapper = validate_header((head[53] << 8) | head[54], true);
 
-			switch (mapper & 0x2e)
+			switch (mapper & 0x202e)
 			{
 				case 0x0000:
 					m_type = BIT(mapper, 0) ? A78_TYPE1 : A78_TYPE0;
@@ -401,6 +403,12 @@ image_init_result a78_cart_slot_device::call_load()
 						m_type = A78_MEGACART;
 					else
 						m_type = A78_VERSABOARD;
+					break;
+				case 0x2002:
+					m_type = A78_BANKSET_SG;
+					break;
+				case 0x2022:
+					m_type = A78_BANKSET_SG_BANKRAM;
 					break;
 			}
 
@@ -450,7 +458,7 @@ image_init_result a78_cart_slot_device::call_load()
 
 			if (m_type == A78_TYPE6 || m_type == A78_TYPE8)
 				m_cart->ram_alloc(0x4000);
-			if (m_type == A78_MEGACART || (m_type >= A78_VERSABOARD && m_type <= A78_VERSA_POK450))
+			if (m_type == A78_MEGACART || (m_type == A78_BANKSET_SG_BANKRAM) || (m_type >= A78_VERSABOARD && m_type <= A78_VERSA_POK450))
 				m_cart->ram_alloc(0x8000);
 			if (m_type == A78_XM_BOARD)
 				m_cart->ram_alloc(0x20000);
@@ -517,7 +525,7 @@ std::string a78_cart_slot_device::get_default_card_software(get_default_card_sof
 		// let's try to auto-fix some common errors in the header
 		mapper = validate_header((head[53] << 8) | head[54], false);
 
-		switch (mapper & 0x2e)
+		switch (mapper & 0x202e)
 		{
 			case 0x0000:
 				type = BIT(mapper, 0) ? A78_TYPE1 : A78_TYPE0;
@@ -537,6 +545,12 @@ std::string a78_cart_slot_device::get_default_card_software(get_default_card_sof
 					type = A78_MEGACART;
 				else
 					type = A78_VERSABOARD;
+				break;
+			case 0x2002:
+				type = A78_BANKSET_SG;
+				break;
+			case 0x2022:
+				type = A78_BANKSET_SG_BANKRAM;
 				break;
 		}
 

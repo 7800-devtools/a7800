@@ -25,6 +25,8 @@ if (BUSES["A7800"]~=null) then
 		MAME_DIR .. "src/devices/bus/a7800/hiscore.h",
 		MAME_DIR .. "src/devices/bus/a7800/xm.cpp",
 		MAME_DIR .. "src/devices/bus/a7800/xm.h",
+		MAME_DIR .. "src/devices/bus/a7800/bankset.cpp",
+		MAME_DIR .. "src/devices/bus/a7800/bankset.h",
 		MAME_DIR .. "src/devices/bus/a7800/cpuwiz.cpp",
 		MAME_DIR .. "src/devices/bus/a7800/cpuwiz.h",
 	}
