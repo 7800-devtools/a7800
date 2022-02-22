@@ -151,3 +151,87 @@ WRITE8_MEMBER(a78_bankset_sg_bankram_device::write_40xx)
 
 }
 
+//-------------- bankset rom --------------
+
+DEFINE_DEVICE_TYPE(A78_ROM_BANKSET_ROM, a78_bankset_rom_device, "a78_bankset_rom", "Atari 7800 Bankset Rom Cart")
+
+
+a78_bankset_rom_device::a78_bankset_rom_device(const machine_config &mconfig, device_type type, const char *tag, device_t *owner, uint32_t clock)
+	: a78_rom_device(mconfig, type, tag, owner, clock)
+{
+}
+
+a78_bankset_rom_device::a78_bankset_rom_device(const machine_config &mconfig, const char *tag, device_t *owner, uint32_t clock)
+	: a78_bankset_rom_device(mconfig, A78_ROM_BANKSET_ROM, tag, owner, clock)
+{
+}
+
+READ8_MEMBER(a78_bankset_rom_device::read_40xx)
+{
+	uint32_t addrstart = 0xC000 - (m_rom_size / 2);
+
+	if(m_dmaactive==0)
+	{
+		if(offset<addrstart)
+			return(0xff);
+		else
+			return m_rom [offset - addrstart];
+	}
+	else // m_dmaactive!=0
+	{
+		if(offset<addrstart)
+			return(0xff);
+		else
+			return m_rom[offset - addrstart + (m_rom_size/2)];
+	}
+	
+}
+
+//-------------- bankset rom --------------
+
+DEFINE_DEVICE_TYPE(A78_ROM_BANKSET_BANKRAM, a78_bankset_bankram_device, "a78_bankset_bankram", "Atari 7800 Bankset BankRAM Cart")
+
+
+a78_bankset_bankram_device::a78_bankset_bankram_device(const machine_config &mconfig, device_type type, const char *tag, device_t *owner, uint32_t clock)
+	: a78_rom_device(mconfig, type, tag, owner, clock)
+{
+}
+
+a78_bankset_bankram_device::a78_bankset_bankram_device(const machine_config &mconfig, const char *tag, device_t *owner, uint32_t clock)
+	: a78_bankset_bankram_device(mconfig, A78_ROM_BANKSET_ROM, tag, owner, clock)
+{
+}
+
+READ8_MEMBER(a78_bankset_bankram_device::read_40xx)
+{
+	uint32_t addrstart = 0xC000 - (m_rom_size / 2);
+
+	if(m_dmaactive==0)
+	{
+		if(offset<addrstart)
+			return(0xff);
+		else
+			return m_rom [offset - addrstart];
+	}
+	else // m_dmaactive!=0
+	{
+		if(offset<addrstart)
+			return(0xff);
+		else
+			return m_rom[offset - addrstart + (m_rom_size/2)];
+	}
+	
+}
+
+WRITE8_MEMBER(a78_bankset_bankram_device::write_40xx)
+{
+	if (offset < 0x4000)
+		m_ram[offset] = data; // Maria can only read, so this has to be Sally's bankset
+	else if (offset >= 0x8000)
+		m_ram[offset -0x8000 + 0x4000] = data;
+
+}
+
+
+
+
