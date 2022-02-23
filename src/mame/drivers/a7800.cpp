@@ -1132,6 +1132,7 @@ void a7800_state::machine_start()
 			case A78_TYPE6_POK450:
 			case A78_TYPEA_POK450:
 			case A78_VERSA_POK450:
+			case A78_BANKSET_POK450:
 				// POKEY and RAM regs at 0x400-0x47f
 				m_maincpu->space(AS_PROGRAM).install_readwrite_handler(0x0400, 0x047f, read8_delegate(FUNC(a78_cart_slot_device::read_04xx),(a78_cart_slot_device*)m_cart), write8_delegate(FUNC(a78_cart_slot_device::write_04xx),(a78_cart_slot_device*)m_cart));
 				break;

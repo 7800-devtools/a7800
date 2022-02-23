@@ -29,17 +29,18 @@ enum
 	A78_XB_BOARD,       // A7800 Expansion Board (it shall more or less apply to the Expansion Module too, but this is not officially released yet)
 	A78_XM_BOARD,       // A7800 XM Expansion Module (theoretical specs only, since this is not officially released yet)
 	A78_BANKSET_SG,
+	A78_BANKSET_POK450,
 	A78_BANKSET_SG_BANKRAM,
 	A78_BANKSET_BANKRAM,
 	A78_BANKSET,
 	A78_MEGACART,               // Homebrew by CPUWIZ, consists of SuperGame bank up to 512K + 32K RAM banked
-	A78_VERSABOARD = 0x10,      // Homebrew by CPUWIZ, consists of SuperGame bank up to 256K + 32K RAM banked
+	A78_VERSABOARD = 0x20,      // Homebrew by CPUWIZ, consists of SuperGame bank up to 256K + 32K RAM banked
 	// VersaBoard variants configured as Type 1/3/A or VersaBoard + POKEY at $0450
-	A78_TYPE0_POK450 = 0x20,
-	A78_TYPE1_POK450 = 0x21,
-	A78_TYPE6_POK450 = 0x24,
-	A78_TYPEA_POK450 = 0x25,
-	A78_VERSA_POK450 = 0x30
+	A78_TYPE0_POK450 = 0x40,
+	A78_TYPE1_POK450 = 0x41,
+	A78_TYPE6_POK450 = 0x44,
+	A78_TYPEA_POK450 = 0x45,
+	A78_VERSA_POK450 = 0x50
 };
 
 

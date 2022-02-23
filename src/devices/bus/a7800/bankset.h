@@ -8,6 +8,7 @@
 
 #include "a78_slot.h"
 #include "rom.h"
+#include "sound/pokey.h"
 
 
 // ======================> a78_bankset_sg_device
@@ -72,6 +73,29 @@ protected:
 
 };
 
+// ======================> a78_bankset_rom_pokey450_device
+
+class a78_bankset_rom_p450_device : public a78_rom_device
+{
+public:
+	// construction/destruction
+	a78_bankset_rom_p450_device(const machine_config &mconfig, const char *tag, device_t *owner, uint32_t clock);
+
+	// reading and writing
+	virtual DECLARE_READ8_MEMBER(read_40xx) override;
+
+	virtual DECLARE_READ8_MEMBER(read_04xx) override { if (offset >= 0x50 && offset < 0x60) return m_pokey450->read(space, offset & 0x0f); else return 0xff; }
+	virtual DECLARE_WRITE8_MEMBER(write_04xx) override { if (offset >= 0x50 && offset < 0x60) m_pokey450->write(space, offset & 0x0f, data); }
+
+protected:
+	a78_bankset_rom_p450_device(const machine_config &mconfig, device_type type, const char *tag, device_t *owner, uint32_t clock);
+
+	virtual void device_add_mconfig(machine_config &config) override;
+	required_device<pokey_device> m_pokey450;
+
+};
+
+
 // ======================> a78_bankset_rom_device
 
 class a78_bankset_bankram_device : public a78_rom_device
@@ -97,5 +121,6 @@ DECLARE_DEVICE_TYPE(A78_ROM_BANKSET_SG, a78_bankset_sg_device)
 DECLARE_DEVICE_TYPE(A78_ROM_BANKSET_SG_BANKRAM, a78_bankset_sg_bankram_device)
 DECLARE_DEVICE_TYPE(A78_ROM_BANKSET_ROM, a78_bankset_rom_device)
 DECLARE_DEVICE_TYPE(A78_ROM_BANKSET_BANKRAM, a78_bankset_bankram_device)
+DECLARE_DEVICE_TYPE(A78_ROM_BANKSET_ROM_POK450, a78_bankset_rom_p450_device)
 
 #endif // MAME_BUS_A7800_BANKSET_H

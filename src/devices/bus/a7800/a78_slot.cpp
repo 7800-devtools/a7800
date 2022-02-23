@@ -285,7 +285,7 @@ struct a78_slot
 	const char              *slot_option;
 };
 
-#define A78_POKEY0450 0x20
+#define A78_POKEY0450 0x40
 
 // Here, we take the feature attribute from .xml (i.e. the PCB name) and we assign a unique ID to it
 static const a78_slot slot_list[] =
@@ -304,6 +304,7 @@ static const a78_slot slot_list[] =
 	{ A78_BANKSET_SG,   "a78_bankset_sg" },
 	{ A78_BANKSET_SG_BANKRAM,   "a78_bankset_sg_bankram" },
 	{ A78_BANKSET,    "a78_bankset" },
+	{ A78_BANKSET_POK450,    "a78_bankset_p450" },
 	{ A78_BANKSET_BANKRAM,   "a78_bankset_bankram" },
 	{ A78_MEGACART,   "a78_megacart" },
 	{ A78_VERSABOARD, "a78_versa" },
@@ -407,7 +408,10 @@ image_init_result a78_cart_slot_device::call_load()
 						m_type = A78_VERSABOARD;
 					break;
 				case 0x2000:
-					m_type = A78_BANKSET;
+					if (mapper & 0x40)
+						m_type = A78_BANKSET_POK450;
+					else
+						m_type = A78_BANKSET;
 					break;
 				case 0x2020:
 					m_type = A78_BANKSET_BANKRAM;
@@ -423,7 +427,7 @@ image_init_result a78_cart_slot_device::call_load()
 			// check if cart has a POKEY at $0450 (typically a VersaBoard variant)
 			if (mapper & 0x40)
 			{
-				if (m_type != A78_TYPE2)
+				if ((m_type != A78_TYPE2) && (!(mapper & 0x2000)))
 				{
 					m_type &= ~0x02;
 					m_type += A78_POKEY0450;
@@ -555,7 +559,10 @@ std::string a78_cart_slot_device::get_default_card_software(get_default_card_sof
 					type = A78_VERSABOARD;
 				break;
 			case 0x2000:
-				type = A78_BANKSET;
+				if (mapper & 0x40)
+					type = A78_BANKSET_POK450;
+				else
+					type = A78_BANKSET;
 				break;
 			case 0x2020:
 				type = A78_BANKSET_BANKRAM;
@@ -571,7 +578,7 @@ std::string a78_cart_slot_device::get_default_card_software(get_default_card_sof
 		// check if cart has a POKEY at $0450 (typically a VersaBoard variant)!
 		if (mapper & 0x40)
 		{
-			if (type != A78_TYPE2)
+			if ((type != A78_TYPE2) && (!(mapper & 0x2000)))
 			{
 				type &= ~0x02;
 				type += A78_POKEY0450;

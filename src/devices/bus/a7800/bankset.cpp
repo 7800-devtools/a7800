@@ -187,6 +187,42 @@ READ8_MEMBER(a78_bankset_rom_device::read_40xx)
 	
 }
 
+//-------------- bankset rom pokey --------------
+
+DEFINE_DEVICE_TYPE(A78_ROM_BANKSET_ROM_POK450, a78_bankset_rom_p450_device, "a78_bankset_rom_p450", "Atari 7800 Bankset Rom Pokey450 Cart")
+
+a78_bankset_rom_p450_device::a78_bankset_rom_p450_device(const machine_config &mconfig, device_type type, const char *tag, device_t *owner, uint32_t clock)
+	: a78_rom_device(mconfig, type, tag, owner, clock)
+	, m_pokey450(*this, "pokey450")
+{
+}
+
+a78_bankset_rom_p450_device::a78_bankset_rom_p450_device(const machine_config &mconfig, const char *tag, device_t *owner, uint32_t clock)
+	: a78_bankset_rom_p450_device(mconfig, A78_ROM_BANKSET_ROM_POK450, tag, owner, clock)
+{
+}
+
+READ8_MEMBER(a78_bankset_rom_p450_device::read_40xx)
+{
+	uint32_t addrstart = 0xC000 - (m_rom_size / 2);
+
+	if(m_dmaactive==0)
+	{
+		if(offset<addrstart)
+			return(0xff);
+		else
+			return m_rom [offset - addrstart];
+	}
+	else // m_dmaactive!=0
+	{
+		if(offset<addrstart)
+			return(0xff);
+		else
+			return m_rom[offset - addrstart + (m_rom_size/2)];
+	}
+	
+}
+
 //-------------- bankset rom --------------
 
 DEFINE_DEVICE_TYPE(A78_ROM_BANKSET_BANKRAM, a78_bankset_bankram_device, "a78_bankset_bankram", "Atari 7800 Bankset BankRAM Cart")
@@ -232,6 +268,13 @@ WRITE8_MEMBER(a78_bankset_bankram_device::write_40xx)
 
 }
 
+// ------------- pokey devices ----------- //
 
+MACHINE_CONFIG_MEMBER( a78_bankset_rom_p450_device::device_add_mconfig )
+        MCFG_SPEAKER_STANDARD_MONO("pokey_450")
+
+        MCFG_SOUND_ADD("pokey450", POKEY, XTAL_14_31818MHz/8)
+        MCFG_SOUND_ROUTE(ALL_OUTPUTS, "pokey_450", 1.00)
+MACHINE_CONFIG_END
 
 
