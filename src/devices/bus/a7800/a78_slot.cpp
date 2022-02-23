@@ -301,12 +301,15 @@ static const a78_slot slot_list[] =
 	{ A78_ACTIVISION, "a78_act" },
 	{ A78_HSC,        "a78_hsc" },
 	{ A78_XM_BOARD,   "a78_xm" },
-	{ A78_BANKSET_SG,   "a78_bankset_sg" },
-	{ A78_BANKSET_SG_BANKRAM,   "a78_bankset_sg_bankram" },
-	{ A78_BANKSET,    "a78_bankset" },
+	{ A78_BANKSET,                     "a78_bankset" },
+	{ A78_BANKSET_POK450,              "a78_bankset_p450" },
+	{ A78_BANKSET_SG,                  "a78_bankset_sg" },
+	{ A78_BANKSET_SG_POK450,           "a78_bankset_sg_p450" },
+	{ A78_BANKSET_SG_BANKRAM,          "a78_bankset_sg_bankram" },
+	{ A78_BANKSET_SG_BANKRAM_POK450,   "a78_bankset_sg_bankram_p450" },
+	{ A78_BANKSET_BANKRAM,             "a78_bankset_bankram" },
+	{ A78_BANKSET_BANKRAM_POK450,      "a78_bankset_bankram_p450" },
 	{ A78_BANKSET_52K,    "a78_bankset_52k" },
-	{ A78_BANKSET_POK450,    "a78_bankset_p450" },
-	{ A78_BANKSET_BANKRAM,   "a78_bankset_bankram" },
 	{ A78_MEGACART,   "a78_megacart" },
 	{ A78_VERSABOARD, "a78_versa" },
 	{ A78_TYPE0_POK450, "a78_p450_t0" },
@@ -417,13 +420,22 @@ image_init_result a78_cart_slot_device::call_load()
 						m_type = A78_BANKSET;
 					break;
 				case 0x2020:
-					m_type = A78_BANKSET_BANKRAM;
+					if (mapper & 0x40)
+						m_type = A78_BANKSET_BANKRAM_POK450;
+					else
+						m_type = A78_BANKSET_BANKRAM;
 					break;
 				case 0x2002:
-					m_type = A78_BANKSET_SG;
+					if (mapper & 0x40)
+						m_type = A78_BANKSET_SG_POK450;
+					else
+						m_type = A78_BANKSET_SG;
 					break;
 				case 0x2022:
-					m_type = A78_BANKSET_SG_BANKRAM;
+					if (mapper & 0x40)
+						m_type = A78_BANKSET_SG_BANKRAM_POK450;
+					else
+						m_type = A78_BANKSET_SG_BANKRAM;
 					break;
 			}
 
@@ -473,7 +485,7 @@ image_init_result a78_cart_slot_device::call_load()
 
 			if (m_type == A78_TYPE6 || m_type == A78_TYPE8)
 				m_cart->ram_alloc(0x4000);
-			if (m_type == A78_MEGACART || (m_type == A78_BANKSET_SG_BANKRAM) || (m_type == A78_BANKSET_BANKRAM) || (m_type >= A78_VERSABOARD && m_type <= A78_VERSA_POK450))
+			if (m_type == A78_MEGACART || (m_type == A78_BANKSET_SG_BANKRAM) || (m_type == A78_BANKSET_SG_BANKRAM_POK450) || (m_type == A78_BANKSET_BANKRAM) || (m_type == A78_BANKSET_BANKRAM_POK450) || (m_type >= A78_VERSABOARD && m_type <= A78_VERSA_POK450))
 				m_cart->ram_alloc(0x8000);
 			if (m_type == A78_XM_BOARD)
 				m_cart->ram_alloc(0x20000);
@@ -570,13 +582,22 @@ std::string a78_cart_slot_device::get_default_card_software(get_default_card_sof
 					type = A78_BANKSET;
 				break;
 			case 0x2020:
-				type = A78_BANKSET_BANKRAM;
+				if (mapper & 0x40)
+					type = A78_BANKSET_BANKRAM_POK450;
+				else
+					type = A78_BANKSET_BANKRAM;
 				break;
 			case 0x2002:
-				type = A78_BANKSET_SG;
+				if (mapper & 0x40)
+					type = A78_BANKSET_SG_POK450;
+				else
+					type = A78_BANKSET_SG;
 				break;
 			case 0x2022:
-				type = A78_BANKSET_SG_BANKRAM;
+				if (mapper & 0x40)
+					type = A78_BANKSET_SG_BANKRAM_POK450;
+				else
+					type = A78_BANKSET_SG_BANKRAM;
 				break;
 		}
 
