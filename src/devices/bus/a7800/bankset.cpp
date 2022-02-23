@@ -187,6 +187,38 @@ READ8_MEMBER(a78_bankset_rom_device::read_40xx)
 	
 }
 
+//-------------- bankset rom 52k --------------
+
+DEFINE_DEVICE_TYPE(A78_ROM_BANKSET_ROM_52K, a78_bankset_rom_52k_device, "a78_bankset_rom_52k", "Atari 7800 Bankset Rom 52K Cart")
+
+
+a78_bankset_rom_52k_device::a78_bankset_rom_52k_device(const machine_config &mconfig, device_type type, const char *tag, device_t *owner, uint32_t clock)
+	: a78_rom_device(mconfig, type, tag, owner, clock)
+{
+}
+
+a78_bankset_rom_52k_device::a78_bankset_rom_52k_device(const machine_config &mconfig, const char *tag, device_t *owner, uint32_t clock)
+	: a78_bankset_rom_52k_device(mconfig, A78_ROM_BANKSET_ROM, tag, owner, clock)
+{
+}
+
+READ8_MEMBER(a78_bankset_rom_52k_device::read_40xx)
+{
+	if(m_dmaactive==0)
+		return m_rom [offset + 0x1000];
+	else // m_dmaactive!=0
+		return m_rom[offset + 0x1000 + 0xD000];
+}
+
+READ8_MEMBER(a78_bankset_rom_52k_device::read_30xx)
+{
+	if(m_dmaactive==0)
+		return m_rom [offset];
+	else // m_dmaactive!=0
+		return m_rom[offset + 0xD000];
+}
+
+
 //-------------- bankset rom pokey --------------
 
 DEFINE_DEVICE_TYPE(A78_ROM_BANKSET_ROM_POK450, a78_bankset_rom_p450_device, "a78_bankset_rom_p450", "Atari 7800 Bankset Rom Pokey450 Cart")

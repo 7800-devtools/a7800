@@ -304,6 +304,7 @@ static const a78_slot slot_list[] =
 	{ A78_BANKSET_SG,   "a78_bankset_sg" },
 	{ A78_BANKSET_SG_BANKRAM,   "a78_bankset_sg_bankram" },
 	{ A78_BANKSET,    "a78_bankset" },
+	{ A78_BANKSET_52K,    "a78_bankset_52k" },
 	{ A78_BANKSET_POK450,    "a78_bankset_p450" },
 	{ A78_BANKSET_BANKRAM,   "a78_bankset_bankram" },
 	{ A78_MEGACART,   "a78_megacart" },
@@ -410,6 +411,8 @@ image_init_result a78_cart_slot_device::call_load()
 				case 0x2000:
 					if (mapper & 0x40)
 						m_type = A78_BANKSET_POK450;
+					else if (len >= 0x1A000)
+						m_type = A78_BANKSET_52K;
 					else
 						m_type = A78_BANKSET;
 					break;
@@ -561,6 +564,8 @@ std::string a78_cart_slot_device::get_default_card_software(get_default_card_sof
 			case 0x2000:
 				if (mapper & 0x40)
 					type = A78_BANKSET_POK450;
+				else if (hook.image_file()->size() >= 0x1A000)
+					type = A78_BANKSET_52K;
 				else
 					type = A78_BANKSET;
 				break;
