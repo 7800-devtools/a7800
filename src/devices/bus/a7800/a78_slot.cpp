@@ -310,6 +310,7 @@ static const a78_slot slot_list[] =
 	{ A78_BANKSET_BANKRAM,             "a78_bankset_bankram" },
 	{ A78_BANKSET_BANKRAM_POK450,      "a78_bankset_bankram_p450" },
 	{ A78_BANKSET_52K,    "a78_bankset_52k" },
+	{ A78_BANKSET_52K_POK450,    "a78_bankset_52k_p450" },
 	{ A78_MEGACART,   "a78_megacart" },
 	{ A78_VERSABOARD, "a78_versa" },
 	{ A78_TYPE0_POK450, "a78_p450_t0" },
@@ -412,12 +413,20 @@ image_init_result a78_cart_slot_device::call_load()
 						m_type = A78_VERSABOARD;
 					break;
 				case 0x2000:
-					if (mapper & 0x40)
-						m_type = A78_BANKSET_POK450;
-					else if (len >= 0x1A000)
-						m_type = A78_BANKSET_52K;
-					else
-						m_type = A78_BANKSET;
+					if (mapper & 0x40) // pokey@450 is requested
+					{
+						if (len >= 0x1A000)
+							m_type = A78_BANKSET_52K_POK450;
+						else
+							m_type = A78_BANKSET_POK450;
+					}
+					else // no pokey
+					{					
+						if (len >= 0x1A000)
+							m_type = A78_BANKSET_52K;
+						else
+							m_type = A78_BANKSET;
+					}
 					break;
 				case 0x2020:
 					if (mapper & 0x40)
@@ -574,12 +583,20 @@ std::string a78_cart_slot_device::get_default_card_software(get_default_card_sof
 					type = A78_VERSABOARD;
 				break;
 			case 0x2000:
-				if (mapper & 0x40)
-					type = A78_BANKSET_POK450;
-				else if (hook.image_file()->size() >= 0x1A000)
-					type = A78_BANKSET_52K;
-				else
-					type = A78_BANKSET;
+				if (mapper & 0x40) // pokey@450 is requested
+				{
+					if (hook.image_file()->size() >= 0x1A000)
+						type = A78_BANKSET_52K_POK450;
+					else
+						type = A78_BANKSET_POK450;
+				}
+				else // no pokey
+				{					
+					if (hook.image_file()->size() >= 0x1A000)
+						type = A78_BANKSET_52K;
+					else
+						type = A78_BANKSET;
+				}
 				break;
 			case 0x2020:
 				if (mapper & 0x40)

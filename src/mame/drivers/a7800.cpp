@@ -1129,8 +1129,11 @@ void a7800_state::machine_start()
 				break;
 			case A78_BANKSET_52K:
 				m_maincpu->space(AS_PROGRAM).install_read_handler(0x3000, 0x3fff, read8_delegate(FUNC(a78_cart_slot_device::read_30xx),(a78_cart_slot_device*)m_cart));
-
 				break;
+			case A78_BANKSET_52K_POK450:
+				m_maincpu->space(AS_PROGRAM).install_read_handler(0x3000, 0x3fff, read8_delegate(FUNC(a78_cart_slot_device::read_30xx),(a78_cart_slot_device*)m_cart));
+				// fall-through to setup pokey@450
+
 			case A78_TYPE0_POK450:
 			case A78_TYPE1_POK450:
 			case A78_TYPE6_POK450:

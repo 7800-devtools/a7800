@@ -37,6 +37,7 @@ enum
 	A78_BANKSET_BANKRAM,
 	A78_BANKSET_BANKRAM_POK450,
 	A78_BANKSET_52K,
+	A78_BANKSET_52K_POK450,
 	A78_MEGACART,               // Homebrew by CPUWIZ, consists of SuperGame bank up to 512K + 32K RAM banked
 	A78_VERSABOARD = 0x20,      // Homebrew by CPUWIZ, consists of SuperGame bank up to 256K + 32K RAM banked
 	// VersaBoard variants configured as Type 1/3/A or VersaBoard + POKEY at $0450
