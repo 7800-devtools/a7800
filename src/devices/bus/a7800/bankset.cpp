@@ -328,7 +328,7 @@ READ8_MEMBER(a78_bankset_rom_device::read_40xx)
 	
 }
 
-//-------------- bankset rom pokey --------------
+//-------------- bankset rom pokey 450 --------------
 
 DEFINE_DEVICE_TYPE(A78_ROM_BANKSET_ROM_POK450, a78_bankset_rom_p450_device, "a78_bankset_rom_p450", "Atari 7800 Bankset Rom Pokey450 Cart")
 
@@ -353,6 +353,52 @@ MACHINE_CONFIG_END
 
 
 READ8_MEMBER(a78_bankset_rom_p450_device::read_40xx)
+{
+	uint32_t addrstart = 0xC000 - (m_rom_size / 2);
+
+	if(m_dmaactive==0)
+	{
+		if(offset<addrstart)
+			return(0xff);
+		else
+			return m_rom [offset - addrstart];
+	}
+	else // m_dmaactive!=0
+	{
+		if(offset<addrstart)
+			return(0xff);
+		else
+			return m_rom[offset - addrstart + (m_rom_size/2)];
+	}
+	
+}
+
+
+//-------------- bankset rom pokey 4000 --------------
+
+DEFINE_DEVICE_TYPE(A78_ROM_BANKSET_ROM_POK4000, a78_bankset_rom_p4000_device, "a78_bankset_rom_p4000", "Atari 7800 Bankset Rom Pokey4000 Cart")
+
+a78_bankset_rom_p4000_device::a78_bankset_rom_p4000_device(const machine_config &mconfig, device_type type, const char *tag, device_t *owner, uint32_t clock)
+	: a78_rom_device(mconfig, type, tag, owner, clock)
+	, m_pokey4000(*this, "pokey4000")
+{
+}
+
+a78_bankset_rom_p4000_device::a78_bankset_rom_p4000_device(const machine_config &mconfig, const char *tag, device_t *owner, uint32_t clock)
+	: a78_bankset_rom_p4000_device(mconfig, A78_ROM_BANKSET_ROM_POK4000, tag, owner, clock)
+{
+}
+
+MACHINE_CONFIG_MEMBER( a78_bankset_rom_p4000_device::device_add_mconfig )
+        MCFG_SPEAKER_STANDARD_MONO("pokey_4000")
+
+        MCFG_SOUND_ADD("pokey4000", POKEY, XTAL_14_31818MHz/8)
+        MCFG_SOUND_ROUTE(ALL_OUTPUTS, "pokey_4000", 1.00)
+MACHINE_CONFIG_END
+
+
+
+READ8_MEMBER(a78_bankset_rom_p4000_device::read_40xx)
 {
 	uint32_t addrstart = 0xC000 - (m_rom_size / 2);
 
@@ -504,23 +550,23 @@ READ8_MEMBER(a78_bankset_rom_52k_device::read_30xx)
 		return m_rom[offset + 0xD000];
 }
 
-//-------------- bankset rom 52k p450 --------------
+//-------------- bankset rom 52k p4000 --------------
 
-DEFINE_DEVICE_TYPE(A78_ROM_BANKSET_ROM_52K_POK450, a78_bankset_rom_52k_p450_device, "a78_bankset_rom_52k", "Atari 7800 Bankset Rom 52K Pokey450 Cart")
+DEFINE_DEVICE_TYPE(A78_ROM_BANKSET_ROM_52K_POK4000, a78_bankset_rom_52k_p4000_device, "a78_bankset_rom_52k", "Atari 7800 Bankset Rom 52K Pokey4000 Cart")
 
 
-a78_bankset_rom_52k_p450_device::a78_bankset_rom_52k_p450_device(const machine_config &mconfig, device_type type, const char *tag, device_t *owner, uint32_t clock)
+a78_bankset_rom_52k_p4000_device::a78_bankset_rom_52k_p4000_device(const machine_config &mconfig, device_type type, const char *tag, device_t *owner, uint32_t clock)
 	: a78_rom_device(mconfig, type, tag, owner, clock)
-	, m_pokey450(*this, "pokey450")
+	, m_pokey4000(*this, "pokey4000")
 {
 }
 
-a78_bankset_rom_52k_p450_device::a78_bankset_rom_52k_p450_device(const machine_config &mconfig, const char *tag, device_t *owner, uint32_t clock)
-	: a78_bankset_rom_52k_p450_device(mconfig, A78_ROM_BANKSET_ROM, tag, owner, clock)
+a78_bankset_rom_52k_p4000_device::a78_bankset_rom_52k_p4000_device(const machine_config &mconfig, const char *tag, device_t *owner, uint32_t clock)
+	: a78_bankset_rom_52k_p4000_device(mconfig, A78_ROM_BANKSET_ROM, tag, owner, clock)
 {
 }
 
-READ8_MEMBER(a78_bankset_rom_52k_p450_device::read_40xx)
+READ8_MEMBER(a78_bankset_rom_52k_p4000_device::read_40xx)
 {
 	if(m_dmaactive==0)
 		return m_rom [offset + 0x1000];
@@ -528,7 +574,7 @@ READ8_MEMBER(a78_bankset_rom_52k_p450_device::read_40xx)
 		return m_rom[offset + 0x1000 + 0xD000];
 }
 
-READ8_MEMBER(a78_bankset_rom_52k_p450_device::read_30xx)
+READ8_MEMBER(a78_bankset_rom_52k_p4000_device::read_30xx)
 {
 	if(m_dmaactive==0)
 		return m_rom [offset];
@@ -537,11 +583,11 @@ READ8_MEMBER(a78_bankset_rom_52k_p450_device::read_30xx)
 }
 
 
-MACHINE_CONFIG_MEMBER( a78_bankset_rom_52k_p450_device::device_add_mconfig )
-        MCFG_SPEAKER_STANDARD_MONO("pokey_450")
+MACHINE_CONFIG_MEMBER( a78_bankset_rom_52k_p4000_device::device_add_mconfig )
+        MCFG_SPEAKER_STANDARD_MONO("pokey_4000")
 
-        MCFG_SOUND_ADD("pokey450", POKEY, XTAL_14_31818MHz/8)
-        MCFG_SOUND_ROUTE(ALL_OUTPUTS, "pokey_450", 1.00)
+        MCFG_SOUND_ADD("pokey4000", POKEY, XTAL_14_31818MHz/8)
+        MCFG_SOUND_ROUTE(ALL_OUTPUTS, "pokey_4000", 1.00)
 MACHINE_CONFIG_END
 
 

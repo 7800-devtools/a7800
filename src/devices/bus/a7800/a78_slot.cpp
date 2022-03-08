@@ -303,6 +303,7 @@ static const a78_slot slot_list[] =
 	{ A78_XM_BOARD,   "a78_xm" },
 	{ A78_BANKSET,                     "a78_bankset" },
 	{ A78_BANKSET_POK450,              "a78_bankset_p450" },
+	{ A78_BANKSET_POK4000,              "a78_bankset_p4000" },
 	{ A78_BANKSET_SG,                  "a78_bankset_sg" },
 	{ A78_BANKSET_SG_POK450,           "a78_bankset_sg_p450" },
 	{ A78_BANKSET_SG_BANKRAM,          "a78_bankset_sg_bankram" },
@@ -310,7 +311,7 @@ static const a78_slot slot_list[] =
 	{ A78_BANKSET_BANKRAM,             "a78_bankset_bankram" },
 	{ A78_BANKSET_BANKRAM_POK450,      "a78_bankset_bankram_p450" },
 	{ A78_BANKSET_52K,    "a78_bankset_52k" },
-	{ A78_BANKSET_52K_POK450,    "a78_bankset_52k_p450" },
+	{ A78_BANKSET_52K_POK4000,    "a78_bankset_52k_p4000" },
 	{ A78_MEGACART,   "a78_megacart" },
 	{ A78_VERSABOARD, "a78_versa" },
 	{ A78_TYPE0_POK450, "a78_p450_t0" },
@@ -415,10 +416,14 @@ image_init_result a78_cart_slot_device::call_load()
 				case 0x2000:
 					if (mapper & 0x40) // pokey@450 is requested
 					{
+						m_type = A78_BANKSET_POK450;
+					}
+					if (mapper & 0x1) // pokey@4000 is requested
+					{
 						if (len >= 0x1A000)
-							m_type = A78_BANKSET_52K_POK450;
+							m_type = A78_BANKSET_52K_POK4000;
 						else
-							m_type = A78_BANKSET_POK450;
+							m_type = A78_BANKSET_POK4000;
 					}
 					else // no pokey
 					{					
@@ -585,11 +590,16 @@ std::string a78_cart_slot_device::get_default_card_software(get_default_card_sof
 			case 0x2000:
 				if (mapper & 0x40) // pokey@450 is requested
 				{
-					if (hook.image_file()->size() >= 0x1A000)
-						type = A78_BANKSET_52K_POK450;
-					else
-						type = A78_BANKSET_POK450;
+					type = A78_BANKSET_POK450;
 				}
+				else if (mapper & 0x1) // pokey@4000 is requested
+				{
+					if (hook.image_file()->size() >= 0x1A000)
+						type = A78_BANKSET_52K_POK4000;
+					else
+						type = A78_BANKSET_POK4000;
+				}
+
 				else // no pokey
 				{					
 					if (hook.image_file()->size() >= 0x1A000)
