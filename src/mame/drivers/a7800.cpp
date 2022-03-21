@@ -460,16 +460,15 @@ WRITE8_MEMBER(a7800_state::riot_w)
 
 TIMER_DEVICE_CALLBACK_MEMBER(a7800_state::interrupt)
 {
-	// DMA Begins 7 cycles after hblank
-	// but then...
+	// DMA Begins 7 cycles after hblank starts
 	//
-	//   Maria waits for the 6502 clock to complete (0-3 mcycles)
-	//   then 4 or 6 clocks to complete the cpu cycle that is allowed
-	//   then another 2 clocks to assert dma addresses
-	//
-	// a total of 6-11 clocks before dma can actually begin.
-	//
-	machine().scheduler().timer_set(m_maincpu->cycles_to_attotime(28+6)/4, timer_expired_delegate(FUNC(a7800_state::maria_startdma),this));
+	// According to the GCC timing diagram, HSYNC goes for 34 cycles, at which time HBLANK starts.
+	// That means we should have 28+34 cycles worth of delay from the sync edge, before DMA starts.
+	// For some reason, likely due cycle innacuracies elsewhere, we need to reduce by 12 cycles, or
+	// else we get glitching in Summer Games diving. However, the delay for DMA correctly handles 
+	// other problem roms, like Xenophobe and Missing In Action.
+
+	machine().scheduler().timer_set(m_maincpu->cycles_to_attotime(28+34-14)/4, timer_expired_delegate(FUNC(a7800_state::maria_startdma),this));
 
 	// Visible pixels begin after 33.5 cycles...
 	machine().scheduler().timer_set(m_maincpu->cycles_to_attotime(67)/2, timer_expired_delegate(FUNC(a7800_state::maria_startvisible),this));
