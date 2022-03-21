@@ -179,9 +179,12 @@ void atari_maria_device::draw_scanline()
 	int width, pal, ind;
 	uint8_t hpos;
 	uint16_t dl;
-	int d, c, pixel_cell, cells;
+	int c, cells;
 	int maria_cycles;
 	int dma_hole_known;
+
+	for (int i = 0; i < 160; i++)
+		m_line_ram[m_active_buffer][i] = 0;
 
 	cells = 0;
 
@@ -192,19 +195,15 @@ void atari_maria_device::draw_scanline()
 		// MARIA is done rendering, or after its hit the maximum rendering time.
 		maria_cycles = 16;
 
-
 		/* Process this DLL entry */
 		dl = m_dl;
 
 		/* DMA */
-		/* Step through DL's while we're within maximum rendering time. */
-		/*  max render time = ( scanline length - DMA start ) */
-		/*     426          = (     454         -     28    ) */
-		/* A max render time of 428 is substituted instead due to */
-		/* absence of mid scanline changes as a kludge to avoid glitches */
-		/* in titles such as Scrapyard Dog and Super Skateboardin'. */
+		/* Max DMA 430 out of 454 cycles seems to match real hardware */
 
-		while (((READ_MEM(dl + 1) & 0x5f) != 0) && (maria_cycles<428))
+		#define DMALIMIT 430
+
+		while (((READ_MEM(dl + 1) & 0x5f) != 0) && (maria_cycles<DMALIMIT))
 		{
 			/* Extended header */
 			if (!(READ_MEM(dl + 1) & 0x1f))
@@ -236,7 +235,7 @@ void atari_maria_device::draw_scanline()
 
 			for (int x = 0; x < width; x++)
 			{
-				if (maria_cycles >= 428) // ensure we haven't overrun the maximum render time
+				if (maria_cycles >= DMALIMIT) // ensure we haven't overrun the maximum render time
 					break;
 
 				/* Do indirect mode */
@@ -286,20 +285,7 @@ void atari_maria_device::draw_scanline()
 
 		// Last Line post-render DMA cycle penalties...
 		if (m_offset == 0)
-		{
-			maria_cycles += 6; // extra shutdown time
-
-			if (READ_MEM(m_dll + 3) & 0x80)
-				maria_cycles += 17; // interrupt overhead
-
-		}
-
-		// If MARIA used up all of the DMA time then the CPU can't run until next line...
-		if (maria_cycles>=428)
-		{
-			m_cpu->spin_until_trigger(TRIGGER_HSYNC);
-			m_wsync = 1;
-		}
+			maria_cycles += 8; // extra shutdown time
 
 		// Spin the CPU for Maria DMA, if it's not already spinning for WSYNC.
 		// MARIA generates the 6502 clock by dividing its own clock by 4. It needs to HALT and unHALT
@@ -307,56 +293,60 @@ void atari_maria_device::draw_scanline()
 		// To spin until an even divisor, we just round-up any would-be truncations by adding 3.
 		if (!m_wsync)
 			m_cpu->spin_until_time(m_cpu->cycles_to_attotime((maria_cycles+3)/4));
-	}
+	} //if m_dmaon
+}
 
+void atari_maria_device::display_visible(int pixelx)
+{
 	// draw line buffer to screen
-	m_active_buffer = !m_active_buffer; // switch buffers
 	uint16_t *scanline;
 	scanline = &m_bitmap.pix16(m_screen->vpos());
 
+	int d,pixel_cell;
 
-	for (int i = 0; i < 160; i++)
+	int standby_buffer = !m_active_buffer; // display using the non-active buffer
+
+	switch (m_rm)
 	{
-		switch (m_rm)
-		{
-			case 0x00:  /* 160A, 160B */
-			case 0x01:  /* 160A, 160B */
-				pixel_cell =  m_line_ram[m_active_buffer][i];
-				scanline[2 * i] = m_maria_palette[pixel_cell];
-				scanline[2 * i + 1] = m_maria_palette[pixel_cell];
-				break;
+		case 0x00:  /* 160A, 160B */
+		case 0x01:  /* 160A, 160B */
+			pixel_cell =  m_line_ram[standby_buffer][pixelx];
+			scanline[2 * pixelx] = m_maria_palette[pixel_cell];
+			scanline[2 * pixelx + 1] = m_maria_palette[pixel_cell];
+			break;
+		case 0x02: /* 320B, 320D */
+			pixel_cell = m_line_ram[standby_buffer][pixelx];
+			d = (pixel_cell & 0x10) | (pixel_cell & 0x02) | ((pixel_cell >> 3) & 1); // b4 0 0 b1 b3
+			scanline[2 * pixelx] = m_maria_palette[d];
+			d = (pixel_cell & 0x10) | ((pixel_cell << 1) & 0x02) | ((pixel_cell >> 2) & 1); // b4 0 0 b0 b2
+			scanline[2 * pixelx + 1] = m_maria_palette[d];
+			break;
 
-			case 0x02: /* 320B, 320D */
-				pixel_cell = m_line_ram[m_active_buffer][i];
-				d = (pixel_cell & 0x10) | (pixel_cell & 0x02) | ((pixel_cell >> 3) & 1); // b4 0 0 b1 b3
-				scanline[2 * i] = m_maria_palette[d];
-				d = (pixel_cell & 0x10) | ((pixel_cell << 1) & 0x02) | ((pixel_cell >> 2) & 1); // b4 0 0 b0 b2
-				scanline[2 * i + 1] = m_maria_palette[d];
-				break;
-
-			case 0x03:  /* 320A, 320C */
-				pixel_cell = m_line_ram[m_active_buffer][i];
-				d = (pixel_cell & 0x1c) | (pixel_cell & 0x02); // b4 b3 b2 b1 0
-				scanline[2 * i] = m_maria_palette[d];
-				d = (pixel_cell & 0x1c) | ((pixel_cell << 1) & 0x02); // b4 b3 b2 b0 0
-				scanline[2 * i + 1] = m_maria_palette[d];
-				break;
-		}
-
-		if(m_color_kill) //remove color if there's no colorburst signal
-		{
-				scanline[2 * i] &= 0x0f;
-				scanline[2 * i + 1] &= 0x0f;
-		}
+		case 0x03:  /* 320A, 320C */
+			pixel_cell = m_line_ram[standby_buffer][pixelx];
+			d = (pixel_cell & 0x1c) | (pixel_cell & 0x02); // b4 b3 b2 b1 0
+			scanline[2 * pixelx] = m_maria_palette[d];
+			d = (pixel_cell & 0x1c) | ((pixel_cell << 1) & 0x02); // b4 b3 b2 b0 0
+			scanline[2 * pixelx + 1] = m_maria_palette[d];
+			break;
 	}
 
-	for (int i = 0; i < 160; i++) // buffer automaticaly cleared once displayed
-		m_line_ram[m_active_buffer][i] = 0;
+	if(m_color_kill) //remove color if there's no colorburst signal
+	{
+		scanline[2 * pixelx] &= 0x0f;
+		scanline[2 * pixelx + 1] &= 0x0f;
+	}
+
 }
 
 
 void atari_maria_device::interrupt(int lines)
 {
+	// Fix the pixel clock. This is a kludge, because when Mame gets a scanline width
+	// that isn't an even amount of cpu clocks, the clock jitters. 
+	// To work around that we make the scanline width an even number of clock, and 
+	// then we spin the CPU at hblank one half clock to correct.
+
 	if (m_wsync)
 	{
 		machine().scheduler().trigger(TRIGGER_HSYNC);
@@ -365,18 +355,33 @@ void atari_maria_device::interrupt(int lines)
 
 	int frame_scanline = m_screen->vpos() % (lines + 1);
 	if (frame_scanline == 16)
-		m_vblank = 0x00;
+	{
+		machine().scheduler().timer_set(m_cpu->cycles_to_attotime(34)/4, timer_expired_delegate(FUNC(atari_maria_device::vblankend),this));
+	}
 
 	if (frame_scanline == (lines - 5))
-		m_vblank = 0x80;
+	{
+		machine().scheduler().timer_set(m_cpu->cycles_to_attotime(34)/4, timer_expired_delegate(FUNC(atari_maria_device::vblankstart),this));
+	}
+}
+
+TIMER_CALLBACK_MEMBER(atari_maria_device::vblankend)
+{
+	m_vblank = 0x00;
+}
+
+TIMER_CALLBACK_MEMBER(atari_maria_device::vblankstart)
+{
+	m_vblank = 0x80;
 }
 
 
 void atari_maria_device::startdma(int lines)
 {
 	address_space& space = m_cpu->space(AS_PROGRAM);
-	int maria_scanline = m_screen->vpos();
-	int frame_scanline = maria_scanline % (lines + 1);
+	int frame_scanline = m_screen->vpos();
+
+	m_active_buffer = !m_active_buffer; // switch active buffer at start of DMA
 
 	if ((frame_scanline == 16) && m_dmaon)
 	{
@@ -412,10 +417,18 @@ void atari_maria_device::startdma(int lines)
 
 	if (m_nmi)
 	{
-		m_cpu->set_input_line(INPUT_LINE_NMI, PULSE_LINE);
-		m_nmi = 0;
+		// NMI isn't raised until 2 post-DMA CPU cycles
+		machine().scheduler().timer_set(m_cpu->cycles_to_attotime(2), timer_expired_delegate(FUNC(atari_maria_device::raisenmi),this));
 	}
 }
+
+TIMER_CALLBACK_MEMBER(atari_maria_device::raisenmi)
+{
+		if (m_wsync == 0)
+			m_cpu->set_input_line(INPUT_LINE_NMI, PULSE_LINE);
+		m_nmi = 0;
+}
+
 
 /***************************************************************************
 

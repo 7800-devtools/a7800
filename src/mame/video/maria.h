@@ -18,9 +18,15 @@ public:
 
 	void interrupt(int lines);
 	void startdma(int lines);
+	void display_visible(int pixelx);
 
 	DECLARE_READ8_MEMBER(read);
 	DECLARE_WRITE8_MEMBER(write);
+
+	TIMER_CALLBACK_MEMBER(raisenmi);
+
+	TIMER_CALLBACK_MEMBER(vblankstart);
+	TIMER_CALLBACK_MEMBER(vblankend);
 
 	uint32_t screen_update(screen_device &screen, bitmap_ind16 &bitmap, const rectangle &cliprect);
 
