@@ -29,14 +29,14 @@ enum
 	A78_XB_BOARD,       // A7800 Expansion Board (it shall more or less apply to the Expansion Module too, but this is not officially released yet)
 	A78_XM_BOARD,       // A7800 XM Expansion Module (theoretical specs only, since this is not officially released yet)
 	A78_BANKSET,
-	A78_BANKSET_POK450,
+	A78_BANKSET_POK800,
 	A78_BANKSET_POK4000,
 	A78_BANKSET_SG,
-	A78_BANKSET_SG_POK450,
+	A78_BANKSET_SG_POK800,
 	A78_BANKSET_SG_BANKRAM,
-	A78_BANKSET_SG_BANKRAM_POK450,
+	A78_BANKSET_SG_BANKRAM_POK800,
 	A78_BANKSET_BANKRAM,
-	A78_BANKSET_BANKRAM_POK450,
+	A78_BANKSET_BANKRAM_POK800,
 	A78_BANKSET_52K,
 	A78_BANKSET_52K_POK4000,
 	A78_MEGACART,               // Homebrew by CPUWIZ, consists of SuperGame bank up to 512K + 32K RAM banked
@@ -60,10 +60,12 @@ public:
 
 	// memory accessor
 	virtual DECLARE_READ8_MEMBER(read_04xx) { return 0xff; }
+	virtual DECLARE_READ8_MEMBER(read_08xx) { return 0xff; }
 	virtual DECLARE_READ8_MEMBER(read_10xx) { return 0xff; }
 	virtual DECLARE_READ8_MEMBER(read_30xx) { return 0xff; }
 	virtual DECLARE_READ8_MEMBER(read_40xx) { return 0xff; }
 	virtual DECLARE_WRITE8_MEMBER(write_04xx) {}
+	virtual DECLARE_WRITE8_MEMBER(write_08xx) {}
 	virtual DECLARE_WRITE8_MEMBER(write_10xx) {}
 	virtual DECLARE_WRITE8_MEMBER(write_30xx) {}
 	virtual DECLARE_WRITE8_MEMBER(write_40xx) {}
@@ -129,10 +131,12 @@ public:
 
 	// reading and writing
 	virtual DECLARE_READ8_MEMBER(read_04xx);
+	virtual DECLARE_READ8_MEMBER(read_08xx);
 	virtual DECLARE_READ8_MEMBER(read_10xx);
 	virtual DECLARE_READ8_MEMBER(read_30xx);
 	virtual DECLARE_READ8_MEMBER(read_40xx);
 	virtual DECLARE_WRITE8_MEMBER(write_04xx);
+	virtual DECLARE_WRITE8_MEMBER(write_08xx);
 	virtual DECLARE_WRITE8_MEMBER(write_10xx);
 	virtual DECLARE_WRITE8_MEMBER(write_30xx);
 	virtual DECLARE_WRITE8_MEMBER(write_40xx);

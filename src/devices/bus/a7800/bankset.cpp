@@ -54,7 +54,7 @@ READ8_MEMBER(a78_bankset_sg_device::read_40xx)
 	if(m_dmaactive==0)
 	{
 		if (offset < 0x4000)
-			return 0xff; // can we do better?
+			return m_rom[offset + ((m_bank_mask/2) * 0x4000) - 0x4000];   // second last bank
 		else if (offset < 0x8000)
 			return m_rom[(offset & 0x3fff) + (m_bank * 0x4000)];
 		else
@@ -63,7 +63,7 @@ READ8_MEMBER(a78_bankset_sg_device::read_40xx)
 	else // m_dmaactive!=0
 	{
 		if (offset < 0x4000)
-			return 0xff; // can we do better?
+			return m_rom[offset + ((m_bank_mask/2) * 0x4000) + (((m_bank_mask/2)+1) * 0x4000) - 0x4000];   // second last bank
 		else if (offset < 0x8000)
 			return m_rom[(offset & 0x3fff) + (m_bank * 0x4000) + (((m_bank_mask/2)+1) * 0x4000)];
 		else
@@ -83,41 +83,41 @@ WRITE8_MEMBER(a78_bankset_sg_device::write_40xx)
 	}
 }
 
-//-------------- bankset supergame pokey450 (no ram) --------------
+//-------------- bankset supergame pokey800 (no ram) --------------
 
-DEFINE_DEVICE_TYPE(A78_ROM_BANKSET_SG_POK450, a78_bankset_sg_p450_device, "a78_bankset_sg_p450", "Atari 7800 Bankset SG Pokey450 Cart")
+DEFINE_DEVICE_TYPE(A78_ROM_BANKSET_SG_POK800, a78_bankset_sg_p800_device, "a78_bankset_sg_p800", "Atari 7800 Bankset SG Pokey800 Cart")
 
 
-a78_bankset_sg_p450_device::a78_bankset_sg_p450_device(const machine_config &mconfig, device_type type, const char *tag, device_t *owner, uint32_t clock)
+a78_bankset_sg_p800_device::a78_bankset_sg_p800_device(const machine_config &mconfig, device_type type, const char *tag, device_t *owner, uint32_t clock)
 	: a78_rom_sg_device(mconfig, type, tag, owner, clock)
-	, m_pokey450(*this, "pokey450")
+	, m_pokey800(*this, "pokey800")
 {
 }
 
-a78_bankset_sg_p450_device::a78_bankset_sg_p450_device(const machine_config &mconfig, const char *tag, device_t *owner, uint32_t clock)
-	: a78_bankset_sg_p450_device(mconfig, A78_ROM_BANKSET_SG_POK450, tag, owner, clock)
+a78_bankset_sg_p800_device::a78_bankset_sg_p800_device(const machine_config &mconfig, const char *tag, device_t *owner, uint32_t clock)
+	: a78_bankset_sg_p800_device(mconfig, A78_ROM_BANKSET_SG_POK800, tag, owner, clock)
 {
 }
 
-MACHINE_CONFIG_MEMBER( a78_bankset_sg_p450_device::device_add_mconfig )
-        MCFG_SPEAKER_STANDARD_MONO("pokey_450")
+MACHINE_CONFIG_MEMBER( a78_bankset_sg_p800_device::device_add_mconfig )
+        MCFG_SPEAKER_STANDARD_MONO("pokey_800")
 
-        MCFG_SOUND_ADD("pokey450", POKEY, XTAL_14_31818MHz/8)
-        MCFG_SOUND_ROUTE(ALL_OUTPUTS, "pokey_450", 1.00)
+        MCFG_SOUND_ADD("pokey800", POKEY, XTAL_14_31818MHz/8)
+        MCFG_SOUND_ROUTE(ALL_OUTPUTS, "pokey_800", 1.00)
 MACHINE_CONFIG_END
 
 
-void a78_bankset_sg_p450_device::device_start()
+void a78_bankset_sg_p800_device::device_start()
 {
 	save_item(NAME(m_bank));
 }
 
-void a78_bankset_sg_p450_device::device_reset()
+void a78_bankset_sg_p800_device::device_reset()
 {
 	m_bank = 0;
 }
 
-READ8_MEMBER(a78_bankset_sg_p450_device::read_40xx)
+READ8_MEMBER(a78_bankset_sg_p800_device::read_40xx)
 {
 	if(m_dmaactive==0)
 	{
@@ -140,7 +140,7 @@ READ8_MEMBER(a78_bankset_sg_p450_device::read_40xx)
 	
 }
 
-WRITE8_MEMBER(a78_bankset_sg_p450_device::write_40xx)
+WRITE8_MEMBER(a78_bankset_sg_p800_device::write_40xx)
 {
 	if (offset < 0x4000)
 		return;
@@ -218,42 +218,42 @@ WRITE8_MEMBER(a78_bankset_sg_bankram_device::write_40xx)
 }
 
 
-//-------------- bankset supergame banked ram pokey450--------------
+//-------------- bankset supergame banked ram pokey800--------------
 
-DEFINE_DEVICE_TYPE(A78_ROM_BANKSET_SG_BANKRAM_POK450, a78_bankset_sg_bankram_p450_device, "a78_bankset_sg_bankram_p450", "Atari 7800 Bankset SG BankRAM Pokey450 Cart")
+DEFINE_DEVICE_TYPE(A78_ROM_BANKSET_SG_BANKRAM_POK800, a78_bankset_sg_bankram_p800_device, "a78_bankset_sg_bankram_p800", "Atari 7800 Bankset SG BankRAM Pokey800 Cart")
 
 
-a78_bankset_sg_bankram_p450_device::a78_bankset_sg_bankram_p450_device(const machine_config &mconfig, device_type type, const char *tag, device_t *owner, uint32_t clock)
+a78_bankset_sg_bankram_p800_device::a78_bankset_sg_bankram_p800_device(const machine_config &mconfig, device_type type, const char *tag, device_t *owner, uint32_t clock)
 	: a78_rom_sg_device(mconfig, type, tag, owner, clock)
-	, m_pokey450(*this, "pokey450")
+	, m_pokey800(*this, "pokey800")
 {
 }
 
-a78_bankset_sg_bankram_p450_device::a78_bankset_sg_bankram_p450_device(const machine_config &mconfig, const char *tag, device_t *owner, uint32_t clock)
-	: a78_bankset_sg_bankram_p450_device(mconfig, A78_ROM_BANKSET_SG_BANKRAM_POK450, tag, owner, clock)
+a78_bankset_sg_bankram_p800_device::a78_bankset_sg_bankram_p800_device(const machine_config &mconfig, const char *tag, device_t *owner, uint32_t clock)
+	: a78_bankset_sg_bankram_p800_device(mconfig, A78_ROM_BANKSET_SG_BANKRAM_POK800, tag, owner, clock)
 {
 }
 
-MACHINE_CONFIG_MEMBER( a78_bankset_sg_bankram_p450_device::device_add_mconfig )
-        MCFG_SPEAKER_STANDARD_MONO("pokey_450")
+MACHINE_CONFIG_MEMBER( a78_bankset_sg_bankram_p800_device::device_add_mconfig )
+        MCFG_SPEAKER_STANDARD_MONO("pokey_800")
 
-        MCFG_SOUND_ADD("pokey450", POKEY, XTAL_14_31818MHz/8)
-        MCFG_SOUND_ROUTE(ALL_OUTPUTS, "pokey_450", 1.00)
+        MCFG_SOUND_ADD("pokey800", POKEY, XTAL_14_31818MHz/8)
+        MCFG_SOUND_ROUTE(ALL_OUTPUTS, "pokey_800", 1.00)
 MACHINE_CONFIG_END
 
 
-void a78_bankset_sg_bankram_p450_device::device_start()
+void a78_bankset_sg_bankram_p800_device::device_start()
 {
 	save_item(NAME(m_bank));
 }
 
-void a78_bankset_sg_bankram_p450_device::device_reset()
+void a78_bankset_sg_bankram_p800_device::device_reset()
 {
 	m_bank = 0;
 }
 
 
-READ8_MEMBER(a78_bankset_sg_bankram_p450_device::read_40xx)
+READ8_MEMBER(a78_bankset_sg_bankram_p800_device::read_40xx)
 {
 	if(m_dmaactive==0)
 	{
@@ -276,7 +276,7 @@ READ8_MEMBER(a78_bankset_sg_bankram_p450_device::read_40xx)
 	
 }
 
-WRITE8_MEMBER(a78_bankset_sg_bankram_p450_device::write_40xx)
+WRITE8_MEMBER(a78_bankset_sg_bankram_p800_device::write_40xx)
 {
 	if (offset < 0x4000)
 		m_ram[offset] = data; // Maria can only read, so this has to be Sally's bankset
@@ -328,31 +328,31 @@ READ8_MEMBER(a78_bankset_rom_device::read_40xx)
 	
 }
 
-//-------------- bankset rom pokey 450 --------------
+//-------------- bankset rom pokey 800 --------------
 
-DEFINE_DEVICE_TYPE(A78_ROM_BANKSET_ROM_POK450, a78_bankset_rom_p450_device, "a78_bankset_rom_p450", "Atari 7800 Bankset Rom Pokey450 Cart")
+DEFINE_DEVICE_TYPE(A78_ROM_BANKSET_ROM_POK800, a78_bankset_rom_p800_device, "a78_bankset_rom_p800", "Atari 7800 Bankset Rom Pokey800 Cart")
 
-a78_bankset_rom_p450_device::a78_bankset_rom_p450_device(const machine_config &mconfig, device_type type, const char *tag, device_t *owner, uint32_t clock)
+a78_bankset_rom_p800_device::a78_bankset_rom_p800_device(const machine_config &mconfig, device_type type, const char *tag, device_t *owner, uint32_t clock)
 	: a78_rom_device(mconfig, type, tag, owner, clock)
-	, m_pokey450(*this, "pokey450")
+	, m_pokey800(*this, "pokey800")
 {
 }
 
-a78_bankset_rom_p450_device::a78_bankset_rom_p450_device(const machine_config &mconfig, const char *tag, device_t *owner, uint32_t clock)
-	: a78_bankset_rom_p450_device(mconfig, A78_ROM_BANKSET_ROM_POK450, tag, owner, clock)
+a78_bankset_rom_p800_device::a78_bankset_rom_p800_device(const machine_config &mconfig, const char *tag, device_t *owner, uint32_t clock)
+	: a78_bankset_rom_p800_device(mconfig, A78_ROM_BANKSET_ROM_POK800, tag, owner, clock)
 {
 }
 
-MACHINE_CONFIG_MEMBER( a78_bankset_rom_p450_device::device_add_mconfig )
-        MCFG_SPEAKER_STANDARD_MONO("pokey_450")
+MACHINE_CONFIG_MEMBER( a78_bankset_rom_p800_device::device_add_mconfig )
+        MCFG_SPEAKER_STANDARD_MONO("pokey_800")
 
-        MCFG_SOUND_ADD("pokey450", POKEY, XTAL_14_31818MHz/8)
-        MCFG_SOUND_ROUTE(ALL_OUTPUTS, "pokey_450", 1.00)
+        MCFG_SOUND_ADD("pokey800", POKEY, XTAL_14_31818MHz/8)
+        MCFG_SOUND_ROUTE(ALL_OUTPUTS, "pokey_800", 1.00)
 MACHINE_CONFIG_END
 
 
 
-READ8_MEMBER(a78_bankset_rom_p450_device::read_40xx)
+READ8_MEMBER(a78_bankset_rom_p800_device::read_40xx)
 {
 	uint32_t addrstart = 0xC000 - (m_rom_size / 2);
 
@@ -438,21 +438,27 @@ READ8_MEMBER(a78_bankset_bankram_device::read_40xx)
 {
 	uint32_t addrstart = 0xC000 - (m_rom_size / 2);
 
+
 	if(m_dmaactive==0)
 	{
-		if(offset<addrstart)
+		if(offset<0x4000)
+			return(m_ram[offset]);
+		else if(offset<addrstart)
 			return(0xff);
 		else
 			return m_rom [offset - addrstart];
 	}
 	else // m_dmaactive!=0
 	{
-		if(offset<addrstart)
+		if(offset<0x4000)
+			return(m_ram[offset+0x4000]);
+		else if(offset<addrstart)
 			return(0xff);
 		else
 			return m_rom[offset - addrstart + (m_rom_size/2)];
 	}
 	
+
 }
 
 WRITE8_MEMBER(a78_bankset_bankram_device::write_40xx)
@@ -461,47 +467,50 @@ WRITE8_MEMBER(a78_bankset_bankram_device::write_40xx)
 		m_ram[offset] = data; // Maria can only read, so this has to be Sally's bankset
 	else if (offset >= 0x8000)
 		m_ram[offset -0x8000 + 0x4000] = data;
-
 }
 
 //-------------- bankset bankram --------------
 
-DEFINE_DEVICE_TYPE(A78_ROM_BANKSET_BANKRAM_POK450, a78_bankset_bankram_p450_device, "a78_bankset_bankram_p450", "Atari 7800 Bankset BankRAM Pokey450 Cart")
+DEFINE_DEVICE_TYPE(A78_ROM_BANKSET_BANKRAM_POK800, a78_bankset_bankram_p800_device, "a78_bankset_bankram_p800", "Atari 7800 Bankset BankRAM Pokey800 Cart")
 
 
-a78_bankset_bankram_p450_device::a78_bankset_bankram_p450_device(const machine_config &mconfig, device_type type, const char *tag, device_t *owner, uint32_t clock)
+a78_bankset_bankram_p800_device::a78_bankset_bankram_p800_device(const machine_config &mconfig, device_type type, const char *tag, device_t *owner, uint32_t clock)
 	: a78_rom_device(mconfig, type, tag, owner, clock)
-	, m_pokey450(*this, "pokey450")
+	, m_pokey800(*this, "pokey800")
 {
 }
 
-a78_bankset_bankram_p450_device::a78_bankset_bankram_p450_device(const machine_config &mconfig, const char *tag, device_t *owner, uint32_t clock)
-	: a78_bankset_bankram_p450_device(mconfig, A78_ROM_BANKSET_ROM_POK450, tag, owner, clock)
+a78_bankset_bankram_p800_device::a78_bankset_bankram_p800_device(const machine_config &mconfig, const char *tag, device_t *owner, uint32_t clock)
+	: a78_bankset_bankram_p800_device(mconfig, A78_ROM_BANKSET_ROM_POK800, tag, owner, clock)
 {
 }
 
-MACHINE_CONFIG_MEMBER( a78_bankset_bankram_p450_device::device_add_mconfig )
-        MCFG_SPEAKER_STANDARD_MONO("pokey_450")
+MACHINE_CONFIG_MEMBER( a78_bankset_bankram_p800_device::device_add_mconfig )
+        MCFG_SPEAKER_STANDARD_MONO("pokey_800")
 
-        MCFG_SOUND_ADD("pokey450", POKEY, XTAL_14_31818MHz/8)
-        MCFG_SOUND_ROUTE(ALL_OUTPUTS, "pokey_450", 1.00)
+        MCFG_SOUND_ADD("pokey800", POKEY, XTAL_14_31818MHz/8)
+        MCFG_SOUND_ROUTE(ALL_OUTPUTS, "pokey_800", 1.00)
 MACHINE_CONFIG_END
 
 
-READ8_MEMBER(a78_bankset_bankram_p450_device::read_40xx)
+READ8_MEMBER(a78_bankset_bankram_p800_device::read_40xx)
 {
 	uint32_t addrstart = 0xC000 - (m_rom_size / 2);
 
 	if(m_dmaactive==0)
 	{
-		if(offset<addrstart)
+		if(offset<0x4000)
+			return(m_ram[offset]);
+		else if(offset<addrstart)
 			return(0xff);
 		else
 			return m_rom [offset - addrstart];
 	}
 	else // m_dmaactive!=0
 	{
-		if(offset<addrstart)
+		if(offset<0x4000)
+			return(m_ram[offset+0x4000]);
+		else if(offset<addrstart)
 			return(0xff);
 		else
 			return m_rom[offset - addrstart + (m_rom_size/2)];
@@ -509,7 +518,7 @@ READ8_MEMBER(a78_bankset_bankram_p450_device::read_40xx)
 	
 }
 
-WRITE8_MEMBER(a78_bankset_bankram_p450_device::write_40xx)
+WRITE8_MEMBER(a78_bankset_bankram_p800_device::write_40xx)
 {
 	if (offset < 0x4000)
 		m_ram[offset] = data; // Maria can only read, so this has to be Sally's bankset

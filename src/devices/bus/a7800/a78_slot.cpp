@@ -16,6 +16,7 @@
 
     Accordingly, we use the following handlers:
     - read_04xx/write_04xx for accesses in the $0400 to $047f range
+    - read_08xx/write_08xx for accesses in the $0800 to $0fff range
     - read_10xx/write_10xx for accesses in the $1000 to $17ff range
     - read_30xx/write_30xx for accesses in the $3000 to $3fff range
     - read_40xx/write_40xx for accesses in the $4000 to $ffff range
@@ -231,6 +232,7 @@ int a78_cart_slot_device::validate_header(int head, bool log) const
 			break;
 	}
 
+/*
 	if ((head & 0x3c) && !(head & 0x02))
 	{
 		if (log)
@@ -240,6 +242,7 @@ int a78_cart_slot_device::validate_header(int head, bool log) const
 		}
 		head |= 0x02;
 	}
+*/
 
 	if ((head & 0xff00) == 0x100 && (head & 0xff))
 	{
@@ -261,6 +264,7 @@ int a78_cart_slot_device::validate_header(int head, bool log) const
 		head &= 0xff00;
 	}
 
+/*
 	if ((head & 0xff00) > 0x2000)
 	{
 		if (log)
@@ -270,6 +274,7 @@ int a78_cart_slot_device::validate_header(int head, bool log) const
 		}
 		head &= 0x00ff;
 	}
+*/
 
 	return head;
 }
@@ -302,14 +307,14 @@ static const a78_slot slot_list[] =
 	{ A78_HSC,        "a78_hsc" },
 	{ A78_XM_BOARD,   "a78_xm" },
 	{ A78_BANKSET,                     "a78_bankset" },
-	{ A78_BANKSET_POK450,              "a78_bankset_p450" },
-	{ A78_BANKSET_POK4000,              "a78_bankset_p4000" },
-	{ A78_BANKSET_SG,                  "a78_bankset_sg" },
-	{ A78_BANKSET_SG_POK450,           "a78_bankset_sg_p450" },
-	{ A78_BANKSET_SG_BANKRAM,          "a78_bankset_sg_bankram" },
-	{ A78_BANKSET_SG_BANKRAM_POK450,   "a78_bankset_sg_bankram_p450" },
+	{ A78_BANKSET_POK4000,             "a78_bankset_p4000" },
 	{ A78_BANKSET_BANKRAM,             "a78_bankset_bankram" },
-	{ A78_BANKSET_BANKRAM_POK450,      "a78_bankset_bankram_p450" },
+	{ A78_BANKSET_POK800,              "a78_bankset_p800" },
+	{ A78_BANKSET_BANKRAM_POK800,      "a78_bankset_bankram_p800" },
+	{ A78_BANKSET_SG,                  "a78_bankset_sg" },
+	{ A78_BANKSET_SG_POK800,           "a78_bankset_sg_p800" },
+	{ A78_BANKSET_SG_BANKRAM,          "a78_bankset_sg_bankram" },
+	{ A78_BANKSET_SG_BANKRAM_POK800,   "a78_bankset_sg_bankram_p800" },
 	{ A78_BANKSET_52K,    "a78_bankset_52k" },
 	{ A78_BANKSET_52K_POK4000,    "a78_bankset_52k_p4000" },
 	{ A78_MEGACART,   "a78_megacart" },
@@ -392,7 +397,7 @@ image_init_result a78_cart_slot_device::call_load()
 			// let's try to auto-fix some common errors in the header
 			mapper = validate_header((head[53] << 8) | head[54], true);
 
-			switch (mapper & 0x202e)
+			switch (mapper & 0xe02e)
 			{
 				case 0x0000:
 					m_type = BIT(mapper, 0) ? A78_TYPE1 : A78_TYPE0;
@@ -413,11 +418,8 @@ image_init_result a78_cart_slot_device::call_load()
 					else
 						m_type = A78_VERSABOARD;
 					break;
-				case 0x2000:
-					if (mapper & 0x40) // pokey@450 is requested
-					{
-						m_type = A78_BANKSET_POK450;
-					}
+				// flat banksets...
+				case 0x2000: 
 					if (mapper & 0x1) // pokey@4000 is requested
 					{
 						if (len >= 0x1A000)
@@ -433,23 +435,24 @@ image_init_result a78_cart_slot_device::call_load()
 							m_type = A78_BANKSET;
 					}
 					break;
-				case 0x2020:
-					if (mapper & 0x40)
-						m_type = A78_BANKSET_BANKRAM_POK450;
-					else
-						m_type = A78_BANKSET_BANKRAM;
+				case 0x6000:
+					m_type = A78_BANKSET_BANKRAM;
 					break;
+				case 0xE000:
+					m_type = A78_BANKSET_BANKRAM_POK800;
+					break;
+				// supergam banksets...
 				case 0x2002:
-					if (mapper & 0x40)
-						m_type = A78_BANKSET_SG_POK450;
-					else
-						m_type = A78_BANKSET_SG;
+					m_type = A78_BANKSET_SG;
 					break;
-				case 0x2022:
-					if (mapper & 0x40)
-						m_type = A78_BANKSET_SG_BANKRAM_POK450;
-					else
-						m_type = A78_BANKSET_SG_BANKRAM;
+				case 0x6002:
+					m_type = A78_BANKSET_SG_BANKRAM;
+					break;
+				case 0xA002:
+					m_type = A78_BANKSET_SG_POK800;
+					break;
+				case 0xE002:
+					m_type = A78_BANKSET_SG_BANKRAM_POK800;
 					break;
 			}
 
@@ -499,7 +502,7 @@ image_init_result a78_cart_slot_device::call_load()
 
 			if (m_type == A78_TYPE6 || m_type == A78_TYPE8)
 				m_cart->ram_alloc(0x4000);
-			if (m_type == A78_MEGACART || (m_type == A78_BANKSET_SG_BANKRAM) || (m_type == A78_BANKSET_SG_BANKRAM_POK450) || (m_type == A78_BANKSET_BANKRAM) || (m_type == A78_BANKSET_BANKRAM_POK450) || (m_type >= A78_VERSABOARD && m_type <= A78_VERSA_POK450))
+			if (m_type == A78_MEGACART || (m_type == A78_BANKSET_SG_BANKRAM) || (m_type == A78_BANKSET_SG_BANKRAM_POK800) || (m_type == A78_BANKSET_BANKRAM) || (m_type == A78_BANKSET_BANKRAM_POK800) || (m_type >= A78_VERSABOARD && m_type <= A78_VERSA_POK450))
 				m_cart->ram_alloc(0x8000);
 			if (m_type == A78_XM_BOARD)
 				m_cart->ram_alloc(0x20000);
@@ -566,7 +569,7 @@ std::string a78_cart_slot_device::get_default_card_software(get_default_card_sof
 		// let's try to auto-fix some common errors in the header
 		mapper = validate_header((head[53] << 8) | head[54], false);
 
-		switch (mapper & 0x202e)
+		switch (mapper & 0xe02e)
 		{
 			case 0x0000:
 				type = BIT(mapper, 0) ? A78_TYPE1 : A78_TYPE0;
@@ -587,19 +590,15 @@ std::string a78_cart_slot_device::get_default_card_software(get_default_card_sof
 				else
 					type = A78_VERSABOARD;
 				break;
-			case 0x2000:
-				if (mapper & 0x40) // pokey@450 is requested
-				{
-					type = A78_BANKSET_POK450;
-				}
-				else if (mapper & 0x1) // pokey@4000 is requested
+			// flat banksets...
+			case 0x2000: 
+				if (mapper & 0x1) // pokey@4000 is requested
 				{
 					if (hook.image_file()->size() >= 0x1A000)
 						type = A78_BANKSET_52K_POK4000;
 					else
 						type = A78_BANKSET_POK4000;
 				}
-
 				else // no pokey
 				{					
 					if (hook.image_file()->size() >= 0x1A000)
@@ -608,23 +607,24 @@ std::string a78_cart_slot_device::get_default_card_software(get_default_card_sof
 						type = A78_BANKSET;
 				}
 				break;
-			case 0x2020:
-				if (mapper & 0x40)
-					type = A78_BANKSET_BANKRAM_POK450;
-				else
-					type = A78_BANKSET_BANKRAM;
+			case 0x6000:
+				type = A78_BANKSET_BANKRAM;
 				break;
+			case 0xE000:
+				type = A78_BANKSET_BANKRAM_POK800;
+				break;
+			// supergam banksets...
 			case 0x2002:
-				if (mapper & 0x40)
-					type = A78_BANKSET_SG_POK450;
-				else
-					type = A78_BANKSET_SG;
+				type = A78_BANKSET_SG;
 				break;
-			case 0x2022:
-				if (mapper & 0x40)
-					type = A78_BANKSET_SG_BANKRAM_POK450;
-				else
-					type = A78_BANKSET_SG_BANKRAM;
+			case 0x6002:
+				type = A78_BANKSET_SG_BANKRAM;
+				break;
+			case 0xA002:
+				type = A78_BANKSET_SG_POK800;
+				break;
+			case 0xE002:
+				type = A78_BANKSET_SG_BANKRAM_POK800;
 				break;
 		}
 
@@ -668,6 +668,14 @@ READ8_MEMBER(a78_cart_slot_device::read_04xx)
 		return 0xff;
 }
 
+READ8_MEMBER(a78_cart_slot_device::read_08xx)
+{
+	if (m_cart)
+		return m_cart->read_08xx(space, offset, mem_mask);
+	else
+		return 0xff;
+}
+
 READ8_MEMBER(a78_cart_slot_device::read_10xx)
 {
 	if (m_cart)
@@ -701,6 +709,12 @@ WRITE8_MEMBER(a78_cart_slot_device::write_04xx)
 {
 	if (m_cart)
 		m_cart->write_04xx(space, offset, data, mem_mask);
+}
+
+WRITE8_MEMBER(a78_cart_slot_device::write_08xx)
+{
+	if (m_cart)
+		m_cart->write_08xx(space, offset, data, mem_mask);
 }
 
 WRITE8_MEMBER(a78_cart_slot_device::write_10xx)
