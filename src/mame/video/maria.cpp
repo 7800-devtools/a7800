@@ -199,9 +199,9 @@ void atari_maria_device::draw_scanline()
 		dl = m_dl;
 
 		/* DMA */
-		/* Max DMA 430 out of 454 cycles seems to match real hardware */
+		/* Max DMA 429 out of 454 cycles seems to match real hardware */
 
-		#define DMALIMIT 430
+		#define DMALIMIT 429
 
 		while (((READ_MEM(dl + 1) & 0x5f) != 0) && (maria_cycles<DMALIMIT))
 		{
