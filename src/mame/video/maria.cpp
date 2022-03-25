@@ -286,7 +286,7 @@ void atari_maria_device::draw_scanline()
 		if (m_offset == 0)
 //			maria_cycles += 8;
 		{
-			maria_cycles += 6; // extra shutdown time
+			maria_cycles += 8; // extra shutdown time
 
 			if (READ_MEM(m_dll + 3) & 0x80)
 				maria_cycles += 17; // interrupt overhead
