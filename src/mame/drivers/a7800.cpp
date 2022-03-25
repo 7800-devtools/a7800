@@ -114,8 +114,8 @@
 #include "speaker.h"
 
 
-#define CLK_NTSC 1789772
-#define CLK_PAL  1773447
+#define CLK_NTSC  1789772
+#define CLK_PAL   1773447
 
 // FIXME: global used to pass info between a7800 driver and bus devices
 int m_dmaactive; 
@@ -153,8 +153,6 @@ public:
 	DECLARE_READ8_MEMBER(bios_or_cart_r);
 	DECLARE_READ8_MEMBER(tia_r);
 	DECLARE_WRITE8_MEMBER(tia_w);
-	DECLARE_READ8_MEMBER(riot_r);
-	DECLARE_WRITE8_MEMBER(riot_w);
 	DECLARE_DRIVER_INIT(a7800_ntsc);
 	DECLARE_DRIVER_INIT(a7800u1_ntsc);
 	DECLARE_DRIVER_INIT(a7800u2_ntsc);
@@ -239,11 +237,25 @@ WRITE8_MEMBER(a7800_state::riot_button_pullup_w)
 
 READ8_MEMBER(a7800_state::tia_r)
 {
+
 	uint64_t elapsed; 
 	int16_t cpu_x, cpu_y;
 	int16_t gun_x, gun_y;
 
-	m_maincpu->spin_until_time(m_maincpu->cycles_to_attotime(1)/2);
+	/* For now we only apply the 0.5 cycle penalty to lightgun games, where it's required.
+	   Other games (mostly paddle) may jitter from frame to frame, because we can't actually 
+	   wait 0.5 cycles, and instead wait for 1 cycle every 2x TIA accesses. Without this fix
+	   our 6502 on-screen position is severely skewed. */
+	if ((m_joy1->is_lightgun())||(m_joy2->is_lightgun()))
+	{
+		tia_delay++;
+		if(tia_delay==2)
+		{
+			tia_delay=0;
+			//+3 gives us +1 cpu cycle, because we're partway through an instruction.
+			m_maincpu->spin_until_time(m_maincpu->cycles_to_attotime(3));
+		}
+	}
 
 	switch (offset & 0x0f)
 	{
@@ -395,8 +407,6 @@ WRITE8_MEMBER(a7800_state::tia_w)
 {
 	static uint8_t paddle_is_grounded = 0;
 
-	m_maincpu->spin_until_time(m_maincpu->cycles_to_attotime(1)/2);
-
 	/* For now we only apply the 0.5 cycle penalty to lightgun games, where it's required.
 	   Other games (mostly paddle) may jitter from frame to frame, because we can't actually 
 	   wait 0.5 cycles, and instead wait for 1 cycle every 2x TIA accesses. Without this fix
@@ -443,38 +453,27 @@ WRITE8_MEMBER(a7800_state::tia_w)
 
 }
 
-READ8_MEMBER(a7800_state::riot_r)
-{
-
-	m_maincpu->spin_until_time(m_maincpu->cycles_to_attotime(1)/2);
-	return(m_riot->read(space, offset));
-}
-
-WRITE8_MEMBER(a7800_state::riot_w)
-{
-	m_maincpu->spin_until_time(m_maincpu->cycles_to_attotime(1)/2);
-	m_riot->write(space, offset, data);
-}
 
 // TIMERS
 
 TIMER_DEVICE_CALLBACK_MEMBER(a7800_state::interrupt)
 {
-	// DMA Begins 7 cycles after hblank starts
-	//
-	// According to the GCC timing diagram, HSYNC goes for 34 cycles, at which time HBLANK starts.
-	// That means we should have 28+34 cycles worth of delay from the sync edge, before DMA starts.
-	// For some reason, likely due cycle innacuracies elsewhere, we need to reduce by 12 cycles, or
-	// else we get glitching in Summer Games diving. However, the delay for DMA correctly handles 
-	// other problem roms, like Xenophobe and Missing In Action.
+	// DMA Begins 7 cycles after hblank. (9 cycles and MIA seems to work. seems to be a relative-to-interrupt thing.)
+	machine().scheduler().timer_set(m_maincpu->cycles_to_attotime(7), timer_expired_delegate(FUNC(a7800_state::maria_startdma),this));
 
-	machine().scheduler().timer_set(m_maincpu->cycles_to_attotime(28+34-14)/4, timer_expired_delegate(FUNC(a7800_state::maria_startdma),this));
+	m_maria->interrupt(m_lines);
 
 	// Visible pixels begin after 33.5 cycles...
 	machine().scheduler().timer_set(m_maincpu->cycles_to_attotime(67)/2, timer_expired_delegate(FUNC(a7800_state::maria_startvisible),this));
 	m_pixelx=0;
+}
 
-	m_maria->interrupt(m_lines);
+TIMER_CALLBACK_MEMBER(a7800_state::maria_startvisible)
+{
+	m_maria->display_visible(m_pixelx);
+	m_pixelx++;
+	if(m_pixelx<160)
+	machine().scheduler().timer_set(m_maincpu->cycles_to_attotime(1)/2, timer_expired_delegate(FUNC(a7800_state::maria_startvisible),this));
 }
 
 TIMER_CALLBACK_MEMBER(a7800_state::maria_startdma)
@@ -484,14 +483,6 @@ TIMER_CALLBACK_MEMBER(a7800_state::maria_startdma)
 	m_dmaactive = 0;
 }
 
-
-TIMER_CALLBACK_MEMBER(a7800_state::maria_startvisible)
-{
-	m_maria->display_visible(m_pixelx);
-	m_pixelx++;
-	if(m_pixelx<160)
-		machine().scheduler().timer_set(m_maincpu->cycles_to_attotime(1)/2, timer_expired_delegate(FUNC(a7800_state::maria_startvisible),this));
-}
 
 
 // ROM
@@ -512,7 +503,7 @@ static ADDRESS_MAP_START( a7800_mem, AS_PROGRAM, 8, a7800_state )
 	AM_RANGE(0x0020, 0x003f) AM_MIRROR(0x300) AM_DEVREADWRITE("maria", atari_maria_device, read, write)
 	AM_RANGE(0x0040, 0x00ff) AM_RAMBANK("zpmirror") // mirror of 0x2040-0x20ff, for zero page
 	AM_RANGE(0x0140, 0x01ff) AM_RAMBANK("spmirror") // mirror of 0x2140-0x21ff, for stack page
-	AM_RANGE(0x0280, 0x029f) AM_MIRROR(0x160) AM_READWRITE(riot_r, riot_w)
+	AM_RANGE(0x0280, 0x029f) AM_MIRROR(0x160) AM_DEVREADWRITE("riot", riot6532_device, read, write)
 	AM_RANGE(0x0480, 0x04ff) AM_MIRROR(0x100) AM_RAM AM_SHARE("riot_ram")
 	AM_RANGE(0x1800, 0x1fff) AM_RAM AM_SHARE("6116_1")
 	AM_RANGE(0x2000, 0x27ff) AM_RAM AM_SHARE("6116_2")
@@ -1206,15 +1197,11 @@ static MACHINE_CONFIG_START( a7800_ntsc )
 
 	/* video hardware */
 	MCFG_SCREEN_ADD( "screen", RASTER)
-
 	MCFG_SCREEN_RAW_PARAMS( CLK_NTSC*4, 454, 0, 320, 263, 16, 16 + 243 )
 	/*Exact Frame Timing per updated 7800 Software Guide which is
 	  verified through hardware testing.  Actual number of possible
 	  visible lines is 243*/
-	//MCFG_SCREEN_VISIBLE_AREA( 0, 319, 16, 239 + 16 )
-	//MCFG_SCREEN_REFRESH_RATE(60)
 
-	//MCFG_SCREEN_DEFAULT_POSITION( 1.000, 0.000, 1.072, 0.000 )
 	MCFG_SCREEN_DEFAULT_POSITION( 1.000, 0.000, 1.000, 0.000 )
 	MCFG_SCREEN_UPDATE_DEVICE("maria", atari_maria_device, screen_update)
 	MCFG_SCREEN_PALETTE("palette")
@@ -1253,18 +1240,13 @@ static MACHINE_CONFIG_DERIVED( a7800_pal, a7800_ntsc )
 	/* basic machine hardware */
 	MCFG_CPU_MODIFY("maincpu")
 	MCFG_CPU_CLOCK(CLK_PAL)
-//  MCFG_TIMER_ADD_SCANLINE("scantimer", a7800_interrupt, "screen", 0, 1)
 
 	MCFG_SCREEN_MODIFY( "screen" )
-
 	MCFG_SCREEN_RAW_PARAMS( CLK_PAL*4, 454, 0, 320, 313, 16, 16 + 293 )
 	/*Exact Frame Timing per updated 7800 Software Guide which is
 	  verified through hardware testing.  Actual number of possible
 	  visible lines is 293*/	
-	//MCFG_SCREEN_VISIBLE_AREA( 0, 319, 16, 287 + 16 )
-	//MCFG_SCREEN_REFRESH_RATE(50)
 
-	//MCFG_SCREEN_DEFAULT_POSITION( 1.000, 0.000, 1.108, 0.000 )
 	MCFG_SCREEN_DEFAULT_POSITION( 1.000, 0.000, 1.000, 0.000 )
 	MCFG_PALETTE_MODIFY("palette")
 	MCFG_PALETTE_INIT_OWNER(a7800_state, a7800p )
@@ -1305,15 +1287,12 @@ static MACHINE_CONFIG_DERIVED( a7800u1_pal, a7800_ntsc )
 	/* basic machine hardware */
 	MCFG_CPU_MODIFY("maincpu")
 	MCFG_CPU_CLOCK(CLK_PAL)
-//  MCFG_TIMER_ADD_SCANLINE("scantimer", a7800_interrupt, "screen", 0, 1)
 
 	MCFG_SCREEN_MODIFY( "screen" )
-	MCFG_SCREEN_RAW_PARAMS( 7093788, 454, 0, 320, 313, 16, 16 + 293 )
+	MCFG_SCREEN_RAW_PARAMS( CLK_PAL*4, 454, 0, 320, 313, 16, 16 + 293 )
 	/*Exact Frame Timing per updated 7800 Software Guide which is
 	  verified through hardware testing.  Actual number of possible
 	  visible lines is 293*/	
-	MCFG_SCREEN_VISIBLE_AREA( 0, 319, 16, 287 + 16 )
-	MCFG_SCREEN_REFRESH_RATE(50)
 
 	MCFG_PALETTE_MODIFY("palette")
 	MCFG_PALETTE_INIT_OWNER(a7800_state, a7800pu1 )
@@ -1338,15 +1317,12 @@ static MACHINE_CONFIG_DERIVED( a7800u2_pal, a7800_ntsc )
 	/* basic machine hardware */
 	MCFG_CPU_MODIFY("maincpu")
 	MCFG_CPU_CLOCK(CLK_PAL)
-//  MCFG_TIMER_ADD_SCANLINE("scantimer", a7800_interrupt, "screen", 0, 1)
 
 	MCFG_SCREEN_MODIFY( "screen" )
-	MCFG_SCREEN_RAW_PARAMS( 7093788, 454, 0, 320, 313, 16, 16 + 293 )
+	MCFG_SCREEN_RAW_PARAMS( CLK_PAL*4, 454, 0, 320, 313, 16, 16 + 293 )
 	/*Exact Frame Timing per updated 7800 Software Guide which is
 	  verified through hardware testing.  Actual number of possible
 	  visible lines is 293*/	
-	MCFG_SCREEN_VISIBLE_AREA( 0, 319, 16, 287 + 16 )
-	MCFG_SCREEN_REFRESH_RATE(50)
 	
 	MCFG_PALETTE_MODIFY("palette")
 	MCFG_PALETTE_INIT_OWNER(a7800_state, a7800pu2 )

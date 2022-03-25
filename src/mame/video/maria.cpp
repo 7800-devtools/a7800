@@ -183,7 +183,7 @@ void atari_maria_device::draw_scanline()
 	int maria_cycles;
 	int dma_hole_known;
 
-	for (int i = 0; i < 160; i++)
+	for (int i = 0; i < 160; i++) // working buffer cleared
 		m_line_ram[m_active_buffer][i] = 0;
 
 	cells = 0;
@@ -195,13 +195,12 @@ void atari_maria_device::draw_scanline()
 		// MARIA is done rendering, or after its hit the maximum rendering time.
 		maria_cycles = 16;
 
+
 		/* Process this DLL entry */
 		dl = m_dl;
 
 		/* DMA */
-		/* Max DMA 429 out of 454 cycles seems to match real hardware */
-
-		#define DMALIMIT 429
+		#define DMALIMIT 430
 
 		while (((READ_MEM(dl + 1) & 0x5f) != 0) && (maria_cycles<DMALIMIT))
 		{
@@ -285,7 +284,21 @@ void atari_maria_device::draw_scanline()
 
 		// Last Line post-render DMA cycle penalties...
 		if (m_offset == 0)
-			maria_cycles += 8; // extra shutdown time
+//			maria_cycles += 8;
+		{
+			maria_cycles += 6; // extra shutdown time
+
+			if (READ_MEM(m_dll + 3) & 0x80)
+				maria_cycles += 17; // interrupt overhead
+
+		}
+
+		// If MARIA used up all of the DMA time then the CPU can't run until next line...
+		if (maria_cycles>=DMALIMIT)
+		{
+			m_cpu->spin_until_trigger(TRIGGER_HSYNC);
+			m_wsync = 1;
+		}
 
 		// Spin the CPU for Maria DMA, if it's not already spinning for WSYNC.
 		// MARIA generates the 6502 clock by dividing its own clock by 4. It needs to HALT and unHALT
@@ -293,21 +306,23 @@ void atari_maria_device::draw_scanline()
 		// To spin until an even divisor, we just round-up any would-be truncations by adding 3.
 		if (!m_wsync)
 			m_cpu->spin_until_time(m_cpu->cycles_to_attotime((maria_cycles+3)/4));
-	} //if m_dmaon
+	} // if m_dmaon
 }
 
 void atari_maria_device::display_visible(int pixelx)
 {
+
 	// draw line buffer to screen
 	uint16_t *scanline;
 	scanline = &m_bitmap.pix16(m_screen->vpos());
 
-	int d,pixel_cell;
+	int d, pixel_cell;
 
 	int standby_buffer = !m_active_buffer; // display using the non-active buffer
 
 	switch (m_rm)
 	{
+
 		case 0x00:  /* 160A, 160B */
 		case 0x01:  /* 160A, 160B */
 			pixel_cell =  m_line_ram[standby_buffer][pixelx];
@@ -342,11 +357,6 @@ void atari_maria_device::display_visible(int pixelx)
 
 void atari_maria_device::interrupt(int lines)
 {
-	// Fix the pixel clock. This is a kludge, because when Mame gets a scanline width
-	// that isn't an even amount of cpu clocks, the clock jitters. 
-	// To work around that we make the scanline width an even number of clock, and 
-	// then we spin the CPU at hblank one half clock to correct.
-
 	if (m_wsync)
 	{
 		machine().scheduler().trigger(TRIGGER_HSYNC);
@@ -355,31 +365,18 @@ void atari_maria_device::interrupt(int lines)
 
 	int frame_scanline = m_screen->vpos() % (lines + 1);
 	if (frame_scanline == 16)
-	{
-		machine().scheduler().timer_set(m_cpu->cycles_to_attotime(34)/4, timer_expired_delegate(FUNC(atari_maria_device::vblankend),this));
-	}
+		m_vblank = 0x00;
 
 	if (frame_scanline == (lines - 5))
-	{
-		machine().scheduler().timer_set(m_cpu->cycles_to_attotime(34)/4, timer_expired_delegate(FUNC(atari_maria_device::vblankstart),this));
-	}
-}
-
-TIMER_CALLBACK_MEMBER(atari_maria_device::vblankend)
-{
-	m_vblank = 0x00;
-}
-
-TIMER_CALLBACK_MEMBER(atari_maria_device::vblankstart)
-{
-	m_vblank = 0x80;
+		m_vblank = 0x80;
 }
 
 
 void atari_maria_device::startdma(int lines)
 {
 	address_space& space = m_cpu->space(AS_PROGRAM);
-	int frame_scanline = m_screen->vpos();
+	int maria_scanline = m_screen->vpos();
+	int frame_scanline = maria_scanline % (lines + 1);
 
 	m_active_buffer = !m_active_buffer; // switch active buffer at start of DMA
 
@@ -417,18 +414,10 @@ void atari_maria_device::startdma(int lines)
 
 	if (m_nmi)
 	{
-		// NMI isn't raised until 2 post-DMA CPU cycles
-		machine().scheduler().timer_set(m_cpu->cycles_to_attotime(2), timer_expired_delegate(FUNC(atari_maria_device::raisenmi),this));
+		m_cpu->set_input_line(INPUT_LINE_NMI, PULSE_LINE);
+		m_nmi = 0;
 	}
 }
-
-TIMER_CALLBACK_MEMBER(atari_maria_device::raisenmi)
-{
-		if (m_wsync == 0)
-			m_cpu->set_input_line(INPUT_LINE_NMI, PULSE_LINE);
-		m_nmi = 0;
-}
-
 
 /***************************************************************************
 
