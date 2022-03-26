@@ -584,6 +584,8 @@ uint32_t pokey_device::step_one_clock(void)
 	int ch, clk;
 	uint32_t sum = 0;
 	int clock_triggered[3] = {0,0,0};
+
+	// base clock is either 15KHz or 64Khz...
 	int base_clock = (m_AUDCTL & CLK_15KHZ) ? CLK_114 : CLK_28;
 
 	if( (m_SKCTL & SK_RESET) )
@@ -628,8 +630,6 @@ uint32_t pokey_device::step_one_clock(void)
 		if (clock_triggered[CLK_114] && (m_SKCTL & SK_KEYSCAN))
 			step_keyboard();
 	}
-
-	/* do CHAN2 before CHAN1 because CHAN1 may set borrow! */
 	if (m_channel[CHAN2].check_borrow())
 	{
 		int isJoined = (m_AUDCTL & CH12_JOINED);
@@ -644,7 +644,6 @@ uint32_t pokey_device::step_one_clock(void)
 		if ((m_IRQST & IRQ_TIMR2) && !m_irq_f.isnull())
 				m_irq_f(IRQ_TIMR2);
 	}
-
 	if (m_channel[CHAN1].check_borrow())
 	{
 		int isJoined = (m_AUDCTL & CH12_JOINED);
@@ -660,7 +659,6 @@ uint32_t pokey_device::step_one_clock(void)
 			m_irq_f(IRQ_TIMR1);
 	}
 
-	/* do CHAN4 before CHAN3 because CHAN3 may set borrow! */
 	if (m_channel[CHAN4].check_borrow())
 	{
 		int isJoined = (m_AUDCTL & CH34_JOINED);
@@ -691,6 +689,7 @@ uint32_t pokey_device::step_one_clock(void)
 		else
 			m_channel[CHAN1].m_filter_sample = 1;
 	}
+
 
 	for (ch = 0; ch < 4; ch++)
 	{
@@ -956,7 +955,7 @@ void pokey_device::write_internal(offs_t offset, uint8_t data)
 		LOG_SOUND(("POKEY '%s' AUDCTL $%02x (%s)\n", tag(), data, audctl2str(data)));
 		m_AUDCTL = data;
 
-/*
+/* */
 		printf(" POKEY AUDCTL=0x%02x%s%s%s%s%s%s%s%s\n"
 		, m_AUDCTL
                 , m_AUDCTL & 0x80 ? ", 9-bit poly" : ", 17-bit poly"
@@ -967,7 +966,7 @@ void pokey_device::write_internal(offs_t offset, uint8_t data)
                 , m_AUDCTL & 0x04 ? ", highpass 1+3" : ""
                 , m_AUDCTL & 0x02 ? ", highpass 2+4" : ""
                 , m_AUDCTL & 0x01 ? ", 15KHz" : ", 64KHz");
-*/
+/* */
 
 		break;
 
@@ -979,6 +978,7 @@ void pokey_device::write_internal(offs_t offset, uint8_t data)
 		 * Actually this takes 4 cycles to actually happen.
 		 * FIXME: Use timer for delayed reset !
 		 */
+
 		for (int i = 0; i < POKEY_CHANNELS; i++)
 		{
 			m_channel[i].reset_channel();
@@ -1057,13 +1057,13 @@ void pokey_device::write_internal(offs_t offset, uint8_t data)
 			m_clock_cnt[2] = 0;
 			/* FIXME: Serial port reset ! */
 		}
-/*
+/* */
 		printf(" POKEY SKCTL=0x%02x%s%s%s\n"
 		, m_SKCTL
 		, m_SKCTL & 0x80 ? ", force break" : ""
 		, m_SKCTL & 0x08 ? ", two-tone mode" : ""
 		, m_SKCTL & 0x04 ? ", fast pot scan" : "");
-*/
+/* */
 		break;
 	}
 

@@ -269,13 +269,14 @@ private:
 
 		inline void sample(void)            { m_filter_sample = m_output; }
 		inline void reset_channel(void)     { m_counter = m_AUDF ^ 0xff; }
+		//inline void zero_channel(void)     { m_counter = 0; }
 
 		inline void inc_chan()
 		{
 			m_counter = (m_counter + 1) & 0xff;
 			if (m_counter == 0 && m_borrow_cnt == 0)
 			{
-				m_borrow_cnt = 3;
+				m_borrow_cnt = 1;
 				if (m_parent->m_IRQEN & m_INTMask)
 				{
 					/* Exposed state has changed: This should only be updated after a resync ... */
