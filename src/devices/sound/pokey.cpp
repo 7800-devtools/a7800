@@ -611,8 +611,9 @@ uint32_t pokey_device::step_one_clock(void)
 		if((!(m_AUDCTL & CH1_HICLK))&&(clock_triggered[base_clock]))
 			m_channel[CHAN1].inc_chan();
 
-		clk = (m_AUDCTL & CH3_HICLK) ? CLK_1 : base_clock;
-		if (clock_triggered[clk])
+		if((m_AUDCTL & CH3_HICLK)&&(clock_triggered[CLK_1]))
+			m_channel[CHAN3].inc_chan_d7(); // delay 7 cycles only at 1.79MHz
+		if((!(m_AUDCTL & CH3_HICLK))&&(clock_triggered[base_clock]))
 			m_channel[CHAN3].inc_chan();
 
 		if (clock_triggered[base_clock])
