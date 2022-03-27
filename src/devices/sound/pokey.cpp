@@ -2,12 +2,18 @@
 // copyright-holders:Brad Oliver, Eric Smith, Juergen Buchmueller
 /*****************************************************************************
  *
- *  POKEY chip emulator 4.6
+ *  POKEY chip emulator 4.7 (a7800)
  *
  *  Based on original info found in Ron Fries' Pokey emulator,
  *  with additions by Brad Oliver, Eric Smith and Juergen Buchmueller,
  *  paddle (a/d conversion) details from the Atari 400/800 Hardware Manual.
  *  Polynomial algorithms according to info supplied by Perry McFarlane.
+ *
+ *  4.7 (a7800):
+ *    https://www.virtualdub.org/downloads/Altirra%20Hardware%20Reference%20Manual.pdf
+ *  - updated to reflct that extra cycles for borrowing only impacts tone
+ *    from voices running at 1.79MHz. (+4 cycles unlinked, or +7 cycles linked)
+ *    Two-tone mode support added.
  *
  *  4.6:
  *    [1] http://ploguechipsounds.blogspot.de/2009/10/how-i-recorded-and-decoded-pokeys.html
@@ -19,6 +25,7 @@
  *
  *  4.51:
  *  - changed to use the attotime datatype
+ *
  *  4.5:
  *  - changed the 9/17 bit polynomial formulas such that the values
  *    required for the Tempest Pokey protection will be found.
@@ -29,22 +36,27 @@
  *  - reading the RNG returns the shift register contents ^ 0xff.
  *    That way resetting the Pokey with SKCTL (which resets the
  *    polynomial shifters to 0) returns the expected 0xff value.
+ *
  *  4.4:
  *  - reversed sample values to make OFF channels produce a zero signal.
  *    actually de-reversed them; don't remember that I reversed them ;-/
+ *
  *  4.3:
  *  - for POT inputs returning zero, immediately assert the ALLPOT
  *    bit after POTGO is written, otherwise start trigger timer
  *    depending on SK_PADDLE mode, either 1-228 scanlines or 1-2
  *    scanlines, depending on the SK_PADDLE bit of SKCTL.
+ *
  *  4.2:
  *  - half volume for channels which are inaudible (this should be
  *    close to the real thing).
+ *
  *  4.1:
  *  - default gain increased to closely match the old code.
  *  - random numbers repeat rate depends on POLY9 flag too!
  *  - verified sound output with many, many Atari 800 games,
  *    including the SUPPRESS_INAUDIBLE optimizations.
+ *
  *  4.0:
  *  - rewritten from scratch.
  *  - 16bit stream interface.
@@ -654,6 +666,9 @@ uint32_t pokey_device::step_one_clock(void)
 		else
 			m_channel[CHAN1].reset_channel();
 
+		if (m_SKCTL & SK_TWOTONE)
+			m_channel[CHAN2].reset_channel();
+
 		process_channel(CHAN1);
 
 		// check if some of the requested timer interrupts are enabled
@@ -1125,21 +1140,6 @@ void pokey_device::serin_ready(int after)
 
 inline void pokey_device::process_channel(int ch)
 {
-	if (m_SKCTL & SK_TWOTONE)
-	{
-		if (ch==CHAN2)
-		{
-			m_channel[ch].m_output ^= 1;
-			return;
-		}
-		if (ch==CHAN1)
-		{
-			// we channel 1 only toggles when channel 2 is high
-			if (m_channel[CHAN2].m_output==1)
-				m_channel[ch].m_output ^= 1;
-			return;
-		}
-	}
 	if ((m_channel[ch].m_AUDC & NOTPOLY5) || (m_poly5[m_p5] & 1))
 	{
 		if (m_channel[ch].m_AUDC & PURE)
