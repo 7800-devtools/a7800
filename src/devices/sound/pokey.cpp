@@ -607,21 +607,33 @@ uint32_t pokey_device::step_one_clock(void)
 		m_p17 = (m_p17 + 1 ) % 0x1ffff;
 
 		if((m_AUDCTL & CH1_HICLK)&&(clock_triggered[CLK_1]))
-			m_channel[CHAN1].inc_chan_d7(); // delay 7 cycles only at 1.79MHz
+		{
+			if(m_AUDCTL & CH12_JOINED)
+				m_channel[CHAN1].inc_chan(7);
+			else
+				m_channel[CHAN1].inc_chan(4);
+		}
+
 		if((!(m_AUDCTL & CH1_HICLK))&&(clock_triggered[base_clock]))
-			m_channel[CHAN1].inc_chan();
+			m_channel[CHAN1].inc_chan(1);
 
 		if((m_AUDCTL & CH3_HICLK)&&(clock_triggered[CLK_1]))
-			m_channel[CHAN3].inc_chan_d7(); // delay 7 cycles only at 1.79MHz
+		{
+			if(m_AUDCTL & CH34_JOINED)
+				m_channel[CHAN3].inc_chan(7);
+			else
+				m_channel[CHAN3].inc_chan(4);
+		}
+
 		if((!(m_AUDCTL & CH3_HICLK))&&(clock_triggered[base_clock]))
-			m_channel[CHAN3].inc_chan();
+			m_channel[CHAN3].inc_chan(1);
 
 		if (clock_triggered[base_clock])
 		{
 			if (!(m_AUDCTL & CH12_JOINED))
-				m_channel[CHAN2].inc_chan();
+				m_channel[CHAN2].inc_chan(1);
 			if (!(m_AUDCTL & CH34_JOINED))
-				m_channel[CHAN4].inc_chan();
+				m_channel[CHAN4].inc_chan(1);
 		}
 
 		/* Potentiometer handling */
@@ -638,7 +650,7 @@ uint32_t pokey_device::step_one_clock(void)
 		int isJoined = (m_AUDCTL & CH12_JOINED);
 
 		if (isJoined)
-			m_channel[CHAN2].inc_chan();
+			m_channel[CHAN2].inc_chan(1);
 		else
 			m_channel[CHAN1].reset_channel();
 
@@ -671,7 +683,7 @@ uint32_t pokey_device::step_one_clock(void)
 	{
 		int isJoined = (m_AUDCTL & CH34_JOINED);
 		if (isJoined)
-			m_channel[CHAN4].inc_chan();
+			m_channel[CHAN4].inc_chan(1);
 		else
 			m_channel[CHAN3].reset_channel();
 		process_channel(CHAN3);

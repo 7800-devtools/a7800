@@ -271,25 +271,12 @@ private:
 		inline void reset_channel(void)     { m_counter = m_AUDF ^ 0xff; }
 		inline void reset_channel1(void)     { m_counter = (m_AUDF ^ 0xff)-1; }
 
-		inline void inc_chan()
+		inline void inc_chan(int cycles)
 		{
 			m_counter = (m_counter + 1) & 0xff;
 			if (m_counter == 0 && m_borrow_cnt == 0)
 			{
-				m_borrow_cnt = 1;
-				if (m_parent->m_IRQEN & m_INTMask)
-				{
-					/* Exposed state has changed: This should only be updated after a resync ... */
-					m_parent->synchronize(SYNC_SET_IRQST, m_INTMask);
-				}
-			}
-		}
-		inline void inc_chan_d7()
-		{
-			m_counter = (m_counter + 1) & 0xff;
-			if (m_counter == 0 && m_borrow_cnt == 0)
-			{
-				m_borrow_cnt = 7;
+				m_borrow_cnt = cycles;
 				if (m_parent->m_IRQEN & m_INTMask)
 				{
 					/* Exposed state has changed: This should only be updated after a resync ... */
