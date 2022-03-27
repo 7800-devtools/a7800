@@ -666,8 +666,10 @@ uint32_t pokey_device::step_one_clock(void)
 		else
 			m_channel[CHAN1].reset_channel();
 
-		if (m_SKCTL & SK_TWOTONE)
-			m_channel[CHAN2].reset_channel();
+//		** In two-tone mode both channels should reset each other, but activating
+//		** this one causes off-pitch notes with two-tone music...
+//		if (m_SKCTL & SK_TWOTONE)
+//			m_channel[CHAN2].reset_channel();
 
 		process_channel(CHAN1);
 
@@ -676,11 +678,13 @@ uint32_t pokey_device::step_one_clock(void)
 			m_irq_f(IRQ_TIMR1);
 	}
 
+
 	if (m_channel[CHAN2].check_borrow())
 	{
 		int isJoined = (m_AUDCTL & CH12_JOINED);
 		if (isJoined)
 			m_channel[CHAN1].reset_channel();
+
 		if (m_SKCTL & SK_TWOTONE)
 			m_channel[CHAN1].reset_channel();
 
@@ -692,7 +696,6 @@ uint32_t pokey_device::step_one_clock(void)
 		if ((m_IRQST & IRQ_TIMR2) && !m_irq_f.isnull())
 				m_irq_f(IRQ_TIMR2);
 	}
-
 
 	if (m_channel[CHAN3].check_borrow())
 	{

@@ -269,7 +269,6 @@ private:
 
 		inline void sample(void)            { m_filter_sample = m_output; }
 		inline void reset_channel(void)     { m_counter = m_AUDF ^ 0xff; }
-		inline void reset_channel1(void)     { m_counter = (m_AUDF ^ 0xff)-1; }
 
 		inline void inc_chan(int cycles)
 		{
