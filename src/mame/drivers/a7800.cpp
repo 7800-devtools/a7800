@@ -473,7 +473,7 @@ TIMER_CALLBACK_MEMBER(a7800_state::maria_startvisible)
 	m_maria->display_visible(m_pixelx);
 	m_pixelx++;
 	if(m_pixelx<160)
-	machine().scheduler().timer_set(m_maincpu->cycles_to_attotime(1)/2, timer_expired_delegate(FUNC(a7800_state::maria_startvisible),this));
+		machine().scheduler().timer_set(m_maincpu->cycles_to_attotime(1)/2, timer_expired_delegate(FUNC(a7800_state::maria_startvisible),this));
 }
 
 TIMER_CALLBACK_MEMBER(a7800_state::maria_startdma)

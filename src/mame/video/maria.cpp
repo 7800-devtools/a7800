@@ -284,7 +284,6 @@ void atari_maria_device::draw_scanline()
 
 		// Last Line post-render DMA cycle penalties...
 		if (m_offset == 0)
-//			maria_cycles += 8;
 		{
 			maria_cycles += 8; // extra shutdown time
 
