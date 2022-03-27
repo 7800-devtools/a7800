@@ -23,6 +23,8 @@ extern int m_dmaactive;
 #include "bankset.h"
 #include "speaker.h"
 
+#define CLK_NTSC  1789772
+#define CLK_PAL   1773447
 
 //-------------- bankset supergame (no ram) --------------
 
@@ -102,7 +104,7 @@ a78_bankset_sg_p800_device::a78_bankset_sg_p800_device(const machine_config &mco
 MACHINE_CONFIG_MEMBER( a78_bankset_sg_p800_device::device_add_mconfig )
         MCFG_SPEAKER_STANDARD_MONO("pokey_800")
 
-        MCFG_SOUND_ADD("pokey800", POKEY, XTAL_14_31818MHz/8)
+        MCFG_SOUND_ADD("pokey800", POKEY, CLK_NTSC)
         MCFG_SOUND_ROUTE(ALL_OUTPUTS, "pokey_800", 1.00)
 MACHINE_CONFIG_END
 
@@ -237,7 +239,7 @@ a78_bankset_sg_bankram_p800_device::a78_bankset_sg_bankram_p800_device(const mac
 MACHINE_CONFIG_MEMBER( a78_bankset_sg_bankram_p800_device::device_add_mconfig )
         MCFG_SPEAKER_STANDARD_MONO("pokey_800")
 
-        MCFG_SOUND_ADD("pokey800", POKEY, XTAL_14_31818MHz/8)
+        MCFG_SOUND_ADD("pokey800", POKEY, CLK_NTSC)
         MCFG_SOUND_ROUTE(ALL_OUTPUTS, "pokey_800", 1.00)
 MACHINE_CONFIG_END
 
@@ -346,7 +348,7 @@ a78_bankset_rom_p800_device::a78_bankset_rom_p800_device(const machine_config &m
 MACHINE_CONFIG_MEMBER( a78_bankset_rom_p800_device::device_add_mconfig )
         MCFG_SPEAKER_STANDARD_MONO("pokey_800")
 
-        MCFG_SOUND_ADD("pokey800", POKEY, XTAL_14_31818MHz/8)
+        MCFG_SOUND_ADD("pokey800", POKEY, CLK_NTSC)
         MCFG_SOUND_ROUTE(ALL_OUTPUTS, "pokey_800", 1.00)
 MACHINE_CONFIG_END
 
@@ -392,7 +394,7 @@ a78_bankset_rom_p4000_device::a78_bankset_rom_p4000_device(const machine_config 
 MACHINE_CONFIG_MEMBER( a78_bankset_rom_p4000_device::device_add_mconfig )
         MCFG_SPEAKER_STANDARD_MONO("pokey_4000")
 
-        MCFG_SOUND_ADD("pokey4000", POKEY, XTAL_14_31818MHz/8)
+        MCFG_SOUND_ADD("pokey4000", POKEY, CLK_NTSC)
         MCFG_SOUND_ROUTE(ALL_OUTPUTS, "pokey_4000", 1.00)
 MACHINE_CONFIG_END
 
@@ -488,7 +490,7 @@ a78_bankset_bankram_p800_device::a78_bankset_bankram_p800_device(const machine_c
 MACHINE_CONFIG_MEMBER( a78_bankset_bankram_p800_device::device_add_mconfig )
         MCFG_SPEAKER_STANDARD_MONO("pokey_800")
 
-        MCFG_SOUND_ADD("pokey800", POKEY, XTAL_14_31818MHz/8)
+        MCFG_SOUND_ADD("pokey800", POKEY, CLK_NTSC)
         MCFG_SOUND_ROUTE(ALL_OUTPUTS, "pokey_800", 1.00)
 MACHINE_CONFIG_END
 
@@ -595,7 +597,7 @@ READ8_MEMBER(a78_bankset_rom_52k_p4000_device::read_30xx)
 MACHINE_CONFIG_MEMBER( a78_bankset_rom_52k_p4000_device::device_add_mconfig )
         MCFG_SPEAKER_STANDARD_MONO("pokey_4000")
 
-        MCFG_SOUND_ADD("pokey4000", POKEY, XTAL_14_31818MHz/8)
+        MCFG_SOUND_ADD("pokey4000", POKEY, CLK_NTSC)
         MCFG_SOUND_ROUTE(ALL_OUTPUTS, "pokey_4000", 1.00)
 MACHINE_CONFIG_END
 

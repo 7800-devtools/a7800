@@ -54,6 +54,9 @@
 #include "a78_carts.h"
 #include "speaker.h"
 
+#define CLK_NTSC  1789772
+#define CLK_PAL   1773447
+
 extern int m_dmaactive;
 
 //-------------------------------------------------
@@ -101,10 +104,10 @@ MACHINE_CONFIG_MEMBER( a78_xm_device::device_add_mconfig )
 
 	MCFG_SPEAKER_STANDARD_MONO("xm_speaker")
 
-	MCFG_SOUND_ADD("xm_pokey", POKEY, XTAL_14_31818MHz/8)
+	MCFG_SOUND_ADD("xm_pokey", POKEY, CLK_NTSC)
 	MCFG_SOUND_ROUTE(ALL_OUTPUTS, "xm_speaker", 1.00)
 
-	MCFG_SOUND_ADD("xm_ym2151", YM2151, XTAL_14_31818MHz/4)
+	MCFG_SOUND_ADD("xm_ym2151", YM2151, CLK_NTSC)
 	MCFG_SOUND_ROUTE(ALL_OUTPUTS, "xm_speaker", 1.00)
 MACHINE_CONFIG_END
 
