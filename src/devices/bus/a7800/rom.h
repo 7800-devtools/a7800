@@ -186,7 +186,7 @@ protected:
 };
 
 
-// PCB variants with a POKEY at $0450
+// PCB variants with a POKEY at $0450/$0800
 
 // ======================> a78_rom_p450_device
 
@@ -204,6 +204,24 @@ protected:
 	virtual void device_add_mconfig(machine_config &config) override;
 
 	required_device<pokey_device> m_pokey450;
+};
+
+// ======================> a78_rom_p800_device
+
+class a78_rom_p800_device : public a78_rom_device
+{
+public:
+	// construction/destruction
+	a78_rom_p800_device(const machine_config &mconfig, const char *tag, device_t *owner, uint32_t clock);
+
+	// reading and writing
+	virtual DECLARE_READ8_MEMBER(read_08xx) override { return m_pokey800->read(space, offset & 0x0f); }
+	virtual DECLARE_WRITE8_MEMBER(write_08xx) override { m_pokey800->write(space, offset & 0x0f, data); }
+
+protected:
+	virtual void device_add_mconfig(machine_config &config) override;
+
+	required_device<pokey_device> m_pokey800;
 };
 
 
@@ -225,6 +243,60 @@ protected:
 	required_device<pokey_device> m_pokey450;
 };
 
+// ======================> a78_rom_p800_pokey_device
+
+class a78_rom_p800_pokey_device : public a78_rom_pokey_device
+{
+public:
+	// construction/destruction
+	a78_rom_p800_pokey_device(const machine_config &mconfig, const char *tag, device_t *owner, uint32_t clock);
+
+	// reading and writing
+	virtual DECLARE_READ8_MEMBER(read_08xx) override { return m_pokey800->read(space, offset & 0x0f); }
+	virtual DECLARE_WRITE8_MEMBER(write_08xx) override { m_pokey800->write(space, offset & 0x0f, data); }
+
+protected:
+	virtual void device_add_mconfig(machine_config &config) override;
+
+	required_device<pokey_device> m_pokey800;
+};
+
+// ======================> a78_rom_p450_sg_device
+
+class a78_rom_p450_sg_device : public a78_rom_sg_device
+{
+public:
+	// construction/destruction
+	a78_rom_p450_sg_device(const machine_config &mconfig, const char *tag, device_t *owner, uint32_t clock);
+
+	// reading and writing
+	virtual DECLARE_READ8_MEMBER(read_04xx) override { if (offset >= 0x50 && offset < 0x60) return m_pokey450->read(space, offset & 0x0f); else return 0xff; }
+	virtual DECLARE_WRITE8_MEMBER(write_04xx) override { if (offset >= 0x50 && offset < 0x60) m_pokey450->write(space, offset & 0x0f, data); }
+
+protected:
+	virtual void device_add_mconfig(machine_config &config) override;
+
+	required_device<pokey_device> m_pokey450;
+};
+
+// ======================> a78_rom_p800_sg_device
+
+class a78_rom_p800_sg_device : public a78_rom_sg_device
+{
+public:
+	// construction/destruction
+	a78_rom_p800_sg_device(const machine_config &mconfig, const char *tag, device_t *owner, uint32_t clock);
+
+	// reading and writing
+	virtual DECLARE_READ8_MEMBER(read_08xx) override { return m_pokey800->read(space, offset & 0x0f); }
+	virtual DECLARE_WRITE8_MEMBER(write_08xx) override { m_pokey800->write(space, offset & 0x0f, data); }
+
+protected:
+	virtual void device_add_mconfig(machine_config &config) override;
+
+	required_device<pokey_device> m_pokey800;
+};
+
 
 // ======================> a78_rom_p450_sg_ram_device
 
@@ -242,6 +314,24 @@ protected:
 	virtual void device_add_mconfig(machine_config &config) override;
 
 	required_device<pokey_device> m_pokey450;
+};
+
+// ======================> a78_rom_p800_sg_ram_device
+
+class a78_rom_p800_sg_ram_device : public a78_rom_sg_ram_device
+{
+public:
+	// construction/destruction
+	a78_rom_p800_sg_ram_device(const machine_config &mconfig, const char *tag, device_t *owner, uint32_t clock);
+
+	// reading and writing
+	virtual DECLARE_READ8_MEMBER(read_08xx) override { return m_pokey800->read(space, offset & 0x0f); }
+	virtual DECLARE_WRITE8_MEMBER(write_08xx) override { m_pokey800->write(space, offset & 0x0f, data); }
+
+protected:
+	virtual void device_add_mconfig(machine_config &config) override;
+
+	required_device<pokey_device> m_pokey800;
 };
 
 
@@ -263,9 +353,23 @@ protected:
 	required_device<pokey_device> m_pokey450;
 };
 
+// ======================> a78_rom_p800_sg9_device
 
+class a78_rom_p800_sg9_device : public a78_rom_sg9_device
+{
+public:
+	// construction/destruction
+	a78_rom_p800_sg9_device(const machine_config &mconfig, const char *tag, device_t *owner, uint32_t clock);
 
+	// reading and writing
+	virtual DECLARE_READ8_MEMBER(read_08xx) override { return m_pokey800->read(space, offset & 0x0f); }
+	virtual DECLARE_WRITE8_MEMBER(write_08xx) override { m_pokey800->write(space, offset & 0x0f, data); }
 
+protected:
+	virtual void device_add_mconfig(machine_config &config) override;
+
+	required_device<pokey_device> m_pokey800;
+};
 
 // device type definition
 DECLARE_DEVICE_TYPE(A78_ROM,             a78_rom_device)
@@ -281,7 +385,15 @@ DECLARE_DEVICE_TYPE(A78_ROM_ACTIVISION,  a78_rom_act_device)
 // PCB variants with a POKEY at $0450
 DECLARE_DEVICE_TYPE(A78_ROM_P450,        a78_rom_p450_device)
 DECLARE_DEVICE_TYPE(A78_ROM_P450_POKEY,  a78_rom_p450_pokey_device)
+DECLARE_DEVICE_TYPE(A78_ROM_P450_SG,     a78_rom_p450_sg_device)
 DECLARE_DEVICE_TYPE(A78_ROM_P450_SG_RAM, a78_rom_p450_sg_ram_device)
 DECLARE_DEVICE_TYPE(A78_ROM_P450_SG9,    a78_rom_p450_sg9_device)
+
+// PCB variants with a POKEY at $0800
+DECLARE_DEVICE_TYPE(A78_ROM_P800,        a78_rom_p800_device)
+DECLARE_DEVICE_TYPE(A78_ROM_P800_POKEY,  a78_rom_p800_pokey_device)
+DECLARE_DEVICE_TYPE(A78_ROM_P800_SG,     a78_rom_p800_sg_device)
+DECLARE_DEVICE_TYPE(A78_ROM_P800_SG_RAM, a78_rom_p800_sg_ram_device)
+DECLARE_DEVICE_TYPE(A78_ROM_P800_SG9,    a78_rom_p800_sg9_device)
 
 #endif // MAME_BUS_A7800_ROM_H

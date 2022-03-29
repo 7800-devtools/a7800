@@ -1154,17 +1154,23 @@ void a7800_state::machine_start()
 
 			case A78_TYPE0_POK450:
 			case A78_TYPE1_POK450:
+			case A78_TYPE2_POK450:
 			case A78_TYPE6_POK450:
 			case A78_TYPEA_POK450:
 			case A78_VERSA_POK450:
 				// POKEY and RAM regs at 0x800-0xFFF
 				m_maincpu->space(AS_PROGRAM).install_readwrite_handler(0x0400, 0x04FF, read8_delegate(FUNC(a78_cart_slot_device::read_04xx),(a78_cart_slot_device*)m_cart), write8_delegate(FUNC(a78_cart_slot_device::write_04xx),(a78_cart_slot_device*)m_cart));
 				break;
+			case A78_TYPE0_POK800:
+			case A78_TYPE1_POK800:
+			case A78_TYPE2_POK800:
+			case A78_TYPE6_POK800:
+			case A78_TYPEA_POK800:
 			case A78_BANKSET_POK800:
 			case A78_BANKSET_SG_POK800:
 			case A78_BANKSET_SG_BANKRAM_POK800:
 			case A78_BANKSET_BANKRAM_POK800:
-				// POKEY and RAM regs at 0x800-0xFFF
+				// POKEY at 0x800-0xFFF
 				m_maincpu->space(AS_PROGRAM).install_readwrite_handler(0x0800, 0x0FFF, read8_delegate(FUNC(a78_cart_slot_device::read_08xx),(a78_cart_slot_device*)m_cart), write8_delegate(FUNC(a78_cart_slot_device::write_08xx),(a78_cart_slot_device*)m_cart));
 				break;
 			case A78_XM_BOARD:

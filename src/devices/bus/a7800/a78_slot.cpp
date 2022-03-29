@@ -291,6 +291,7 @@ struct a78_slot
 };
 
 #define A78_POKEY0450 0x40
+#define A78_POKEY0800 0x80
 
 // Here, we take the feature attribute from .xml (i.e. the PCB name) and we assign a unique ID to it
 static const a78_slot slot_list[] =
@@ -321,9 +322,16 @@ static const a78_slot slot_list[] =
 	{ A78_VERSABOARD, "a78_versa" },
 	{ A78_TYPE0_POK450, "a78_p450_t0" },
 	{ A78_TYPE1_POK450, "a78_p450_t1" },
+	{ A78_TYPE2_POK450, "a78_p450_t2" },
 	{ A78_TYPE6_POK450, "a78_p450_t6" },
 	{ A78_TYPEA_POK450, "a78_p450_ta" },
-	{ A78_VERSA_POK450, "a78_p450_vb" }
+	{ A78_VERSA_POK450, "a78_p450_vb" },
+	{ A78_TYPE0_POK800, "a78_p800_t0" },
+	{ A78_TYPE1_POK800, "a78_p800_t1" },
+	{ A78_TYPE2_POK800, "a78_p800_t2" },
+	{ A78_TYPE6_POK800, "a78_p800_t6" },
+	{ A78_TYPEA_POK800, "a78_p800_ta" }
+
 };
 
 static int a78_get_pcb_id(const char *slot)
@@ -454,18 +462,28 @@ image_init_result a78_cart_slot_device::call_load()
 				case 0xE002:
 					m_type = A78_BANKSET_SG_BANKRAM_POK800;
 					break;
+				case 0x8000:
+					m_type = BIT(mapper, 0) ? A78_TYPE1_POK800 : A78_TYPE0_POK800;
+					break;
+				case 0x8002:
+					m_type = A78_TYPE2_POK800;
+					break;
+				case 0x8006:
+					m_type = A78_TYPE6_POK800;
+					break;
+				case 0x800a:
+					m_type = A78_TYPEA_POK800;
+					break;
 			}
 
 			// check if cart has a POKEY at $0450 (typically a VersaBoard variant)
 			if (mapper & 0x40)
 			{
-				if ((m_type != A78_TYPE2) && (!(mapper & 0x2000)))
+				if (!(mapper & 0x2000))
 				{
-					m_type &= ~0x02;
 					m_type += A78_POKEY0450;
 				}
 			}
-
 			// check special bits, which override the previous
 			if ((mapper & 0xff00) == 0x0100)
 				m_type = A78_ACTIVISION;
@@ -474,7 +492,6 @@ image_init_result a78_cart_slot_device::call_load()
 			// (for now) mirror ram implies no bankswitch format is used
 			else if ((mapper & 0x0080) == 0x0080)
 				m_type = A78_TYPE8;
-
 
 			logerror("Cart type: 0x%x\n", m_type);
 
@@ -626,14 +643,26 @@ std::string a78_cart_slot_device::get_default_card_software(get_default_card_sof
 			case 0xE002:
 				type = A78_BANKSET_SG_BANKRAM_POK800;
 				break;
+			case 0x8000:
+				type = BIT(mapper, 0) ? A78_TYPE1_POK800 : A78_TYPE0_POK800;
+				break;
+			case 0x8002:
+				type = A78_TYPE2_POK800;
+				break;
+			case 0x8006:
+				type = A78_TYPE6_POK800;
+				break;
+			case 0x800a:
+				type = A78_TYPEA_POK800;
+				break;
+
 		}
 
 		// check if cart has a POKEY at $0450 (typically a VersaBoard variant)!
 		if (mapper & 0x40)
 		{
-			if ((type != A78_TYPE2) && (!(mapper & 0x2000)))
+			if (!(mapper & 0x2000))
 			{
-				type &= ~0x02;
 				type += A78_POKEY0450;
 			}
 		}
