@@ -10,13 +10,17 @@
  *  Polynomial algorithms according to info supplied by Perry McFarlane.
  *
  *  4.7 (a7800):
- *    https://www.virtualdub.org/downloads/Altirra%20Hardware%20Reference%20Manual.pdf
- *  - updated to reflct that extra cycles for borrowing only impacts tone
- *    from voices running at 1.79MHz. (+4 cycles unlinked, or +7 cycles linked)
- *    Two-tone mode support added.
+ *    [1] https://www.virtualdub.org/downloads/Altirra%20Hardware%20Reference%20Manual.pdf
+ *  - updated to reflect that borrowing cycle delays only impacts voices
+ *    running at 1.79MHz. (+4 cycles unlinked, or +7 cycles linked)
+ *    At slower speeds, cycle overhead still occurs, but only affects
+ *    the phase of the timer period, not the actual length. 
+ *  - Initial two-tone support added. Emulation of two-tone is limited to
+ *    audio output effects, and doesn't incorporate any of the aspects of 
+ *    SIO serial transfer.
  *
  *  4.6:
- *    [1] http://ploguechipsounds.blogspot.de/2009/10/how-i-recorded-and-decoded-pokeys.html
+ *    [2] http://ploguechipsounds.blogspot.de/2009/10/how-i-recorded-and-decoded-pokeys.html
  *  - changed audio emulation to emulate borrow 3 clock delay and
  *    proper channel reset. New frequency only becomes effective
  *    after the counter hits 0. Emulation also treats counters
@@ -666,11 +670,6 @@ uint32_t pokey_device::step_one_clock(void)
 		else
 			m_channel[CHAN1].reset_channel();
 
-//		** In two-tone mode both channels should reset each other, but activating
-//		** this one causes off-pitch notes with two-tone music...
-//		if (m_SKCTL & SK_TWOTONE)
-//			m_channel[CHAN2].reset_channel();
-
 		process_channel(CHAN1);
 
 		// check if some of the requested timer interrupts are enabled
@@ -950,25 +949,21 @@ void pokey_device::write_internal(offs_t offset, uint8_t data)
 	{
 	case AUDF1_C:
 		LOG_SOUND(("POKEY '%s' AUDF1  $%02x\n", tag(), data));
-		//printf("POKEY '%s' AUDF1  $%02x\n", tag(), data);
 		m_channel[CHAN1].m_AUDF = data;
 		break;
 
 	case AUDC1_C:
 		LOG_SOUND(("POKEY '%s' AUDC1  $%02x (%s)\n", tag(), data, audc2str(data)));
-		//printf("POKEY '%s' AUDC1  $%02x (%s)\n", tag(), data, audc2str(data));
 		m_channel[CHAN1].m_AUDC = data;
 		break;
 
 	case AUDF2_C:
 		LOG_SOUND(("POKEY '%s' AUDF2  $%02x\n", tag(), data));
-		//printf("POKEY '%s' AUDF2  $%02x\n", tag(), data);
 		m_channel[CHAN2].m_AUDF = data;
 		break;
 
 	case AUDC2_C:
 		LOG_SOUND(("POKEY '%s' AUDC2  $%02x (%s)\n", tag(), data, audc2str(data)));
-		//printf("POKEY '%s' AUDC2  $%02x (%s)\n", tag(), data, audc2str(data));
 		m_channel[CHAN2].m_AUDC = data;
 		break;
 
@@ -998,7 +993,7 @@ void pokey_device::write_internal(offs_t offset, uint8_t data)
 		LOG_SOUND(("POKEY '%s' AUDCTL $%02x (%s)\n", tag(), data, audctl2str(data)));
 		m_AUDCTL = data;
 
-/* */
+/* 
 		printf(" POKEY AUDCTL=0x%02x%s%s%s%s%s%s%s%s\n"
 		, m_AUDCTL
                 , m_AUDCTL & 0x80 ? ", 9-bit poly" : ", 17-bit poly"
@@ -1009,7 +1004,7 @@ void pokey_device::write_internal(offs_t offset, uint8_t data)
                 , m_AUDCTL & 0x04 ? ", highpass 1+3" : ""
                 , m_AUDCTL & 0x02 ? ", highpass 2+4" : ""
                 , m_AUDCTL & 0x01 ? ", 15KHz" : ", 64KHz");
-/* */
+*/
 
 		break;
 
@@ -1100,13 +1095,13 @@ void pokey_device::write_internal(offs_t offset, uint8_t data)
 			m_clock_cnt[2] = 0;
 			/* FIXME: Serial port reset ! */
 		}
-/* */
+/* 
 		printf(" POKEY SKCTL=0x%02x%s%s%s\n"
 		, m_SKCTL
 		, m_SKCTL & 0x80 ? ", force break" : ""
 		, m_SKCTL & 0x08 ? ", two-tone mode" : ""
 		, m_SKCTL & 0x04 ? ", fast pot scan" : "");
-/* */
+*/
 		break;
 	}
 
