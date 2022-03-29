@@ -156,9 +156,11 @@ public:
 	DECLARE_DRIVER_INIT(a7800_ntsc);
 	DECLARE_DRIVER_INIT(a7800u1_ntsc);
 	DECLARE_DRIVER_INIT(a7800u2_ntsc);
+	DECLARE_DRIVER_INIT(a7800_ntsc_dev);
 	DECLARE_DRIVER_INIT(a7800_pal);
 	DECLARE_DRIVER_INIT(a7800u1_pal);
 	DECLARE_DRIVER_INIT(a7800u2_pal);
+	DECLARE_DRIVER_INIT(a7800_pal_dev);
 	virtual void machine_start() override;
 	virtual void machine_reset() override;
 	DECLARE_PALETTE_INIT(a7800);
@@ -1348,6 +1350,11 @@ static MACHINE_CONFIG_DERIVED( a7800u2_pal, a7800_ntsc )
 	MCFG_SOFTWARE_LIST_FILTER("cart_list","PAL")
 MACHINE_CONFIG_END
 
+static MACHINE_CONFIG_DERIVED( a7800_ntsc_dev, a7800_ntsc )
+MACHINE_CONFIG_END
+
+static MACHINE_CONFIG_DERIVED( a7800_pal_dev, a7800_pal )
+MACHINE_CONFIG_END
 
 /***************************************************************************
     ROM DEFINITIONS
@@ -1377,6 +1384,14 @@ ROM_START( a7800u2 )
 	ROMX_LOAD("c300558-001a.u7", 0x0000, 0x4000, CRC(a0e10edf) SHA1(14584b1eafe9721804782d4b1ac3a4a7313e455f), ROM_BIOS(2) | ROM_OPTIONAL)
 ROM_END
 
+ROM_START( a7800dev )
+	ROM_REGION(0x4000, "maincpu", ROMREGION_ERASEFF)
+	ROM_SYSTEM_BIOS( 0, "a7800", "Atari 7800" )
+	ROMX_LOAD("7800.u7", 0x3000, 0x1000, CRC(5d13730c) SHA1(d9d134bb6b36907c615a594cc7688f7bfcef5b43), ROM_BIOS(1) | ROM_OPTIONAL)
+	ROM_SYSTEM_BIOS( 1, "a7800pr", "Atari 7800 (prototype with Asteroids)" )
+	ROMX_LOAD("c300558-001a.u7", 0x0000, 0x4000, CRC(a0e10edf) SHA1(14584b1eafe9721804782d4b1ac3a4a7313e455f), ROM_BIOS(2) | ROM_OPTIONAL)
+ROM_END
+
 ROM_START( a7800p )
 	ROM_REGION(0x4000, "maincpu", ROMREGION_ERASEFF)
 	ROM_LOAD_OPTIONAL("7800pal.rom", 0x0000, 0x4000, CRC(d5b61170) SHA1(5a140136a16d1d83e4ff32a19409ca376a8df874))
@@ -1392,6 +1407,12 @@ ROM_START( a7800pu2 )
 	ROM_LOAD_OPTIONAL("7800pal.rom", 0x0000, 0x4000, CRC(d5b61170) SHA1(5a140136a16d1d83e4ff32a19409ca376a8df874))
 ROM_END
 
+ROM_START( a7800pdev )
+	ROM_REGION(0x4000, "maincpu", ROMREGION_ERASEFF)
+	ROM_LOAD_OPTIONAL("7800pal.rom", 0x0000, 0x4000, CRC(d5b61170) SHA1(5a140136a16d1d83e4ff32a19409ca376a8df874))
+ROM_END
+
+
 /***************************************************************************
  DRIVER INIT
  ***************************************************************************/
@@ -1402,6 +1423,7 @@ DRIVER_INIT_MEMBER(a7800_state,a7800_ntsc)
 	m_lines = 263;
 	m_p1_one_button = 1;
 	m_p2_one_button = 1;
+	m_maria->m_devmode_flag = 0;
 }
 
 
@@ -1411,6 +1433,7 @@ DRIVER_INIT_MEMBER(a7800_state,a7800u1_ntsc)
 	m_lines = 263;
 	m_p1_one_button = 1;
 	m_p2_one_button = 1;
+	m_maria->m_devmode_flag = 0;
 }
 
 
@@ -1420,6 +1443,7 @@ DRIVER_INIT_MEMBER(a7800_state,a7800u2_ntsc)
 	m_lines = 263;
 	m_p1_one_button = 1;
 	m_p2_one_button = 1;
+	m_maria->m_devmode_flag = 0;
 }
 
 
@@ -1429,6 +1453,7 @@ DRIVER_INIT_MEMBER(a7800_state,a7800_pal)
 	m_lines = 313;
 	m_p1_one_button = 1;
 	m_p2_one_button = 1;
+	m_maria->m_devmode_flag = 0;
 }
 
 
@@ -1438,6 +1463,7 @@ DRIVER_INIT_MEMBER(a7800_state,a7800u1_pal)
 	m_lines = 313;
 	m_p1_one_button = 1;
 	m_p2_one_button = 1;
+	m_maria->m_devmode_flag = 0;
 }
 
 
@@ -1447,7 +1473,27 @@ DRIVER_INIT_MEMBER(a7800_state,a7800u2_pal)
 	m_lines = 313;
 	m_p1_one_button = 1;
 	m_p2_one_button = 1;
+	m_maria->m_devmode_flag = 0;
 }
+
+DRIVER_INIT_MEMBER(a7800_state,a7800_ntsc_dev)
+{
+	m_ispal = false;
+	m_lines = 263;
+	m_p1_one_button = 1;
+	m_p2_one_button = 1;
+	m_maria->m_devmode_flag = 1;
+}
+
+DRIVER_INIT_MEMBER(a7800_state,a7800_pal_dev)
+{
+	m_ispal = true;
+	m_lines = 313;
+	m_p1_one_button = 1;
+	m_p2_one_button = 1;
+	m_maria->m_devmode_flag = 1;
+}
+
 /***************************************************************************
     GAME DRIVERS
 ***************************************************************************/
@@ -1456,6 +1502,8 @@ DRIVER_INIT_MEMBER(a7800_state,a7800u2_pal)
 CONS( 1986, a7800,    0,        0,      a7800_ntsc,	a7800, a7800_state,  a7800_ntsc,	"Atari",  "Atari 7800 (NTSC) Warm", MACHINE_SUPPORTS_SAVE )
 CONS( 1986, a7800u1,  a7800,    0,      a7800u1_ntsc,   a7800, a7800_state,  a7800u1_ntsc,	"Atari",  "Atari 7800 (NTSC) Cool", MACHINE_SUPPORTS_SAVE )
 CONS( 1986, a7800u2,  a7800,    0,      a7800u2_ntsc,   a7800, a7800_state,  a7800u2_ntsc,	"Atari",  "Atari 7800 (NTSC) Hot", MACHINE_SUPPORTS_SAVE )
+CONS( 1986, a7800dev, a7800,    0,      a7800_ntsc_dev,  a7800, a7800_state, a7800_ntsc_dev,	"Atari",  "Atari 7800 (NTSC) Developer Mode", MACHINE_SUPPORTS_SAVE )
 CONS( 1986, a7800p,   a7800,    0,      a7800_pal,	a7800, a7800_state,  a7800_pal,		"Atari",  "Atari 7800 (PAL) Warm", MACHINE_SUPPORTS_SAVE )
 CONS( 1986, a7800pu1, a7800,    0,      a7800u1_pal,	a7800, a7800_state,  a7800u1_pal,	"Atari",  "Atari 7800 (PAL) Cool", MACHINE_SUPPORTS_SAVE )
 CONS( 1986, a7800pu2, a7800,    0,      a7800u2_pal,	a7800, a7800_state,  a7800u2_pal,	"Atari",  "Atari 7800 (PAL) Hot", MACHINE_SUPPORTS_SAVE )
+CONS( 1986, a7800pdev, a7800,    0,      a7800_pal_dev,  a7800, a7800_state, a7800_pal_dev,	"Atari",  "Atari 7800 (PAL) Developer Mode", MACHINE_SUPPORTS_SAVE )

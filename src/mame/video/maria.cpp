@@ -292,6 +292,25 @@ void atari_maria_device::draw_scanline()
 
 		}
 
+		if (m_devmode_flag)
+		{
+			if (maria_cycles>=DMALIMIT)
+			{
+				// if we hit DMA limits, use a yellow+wide indicator
+				m_devmode_dmacolor=0x1f;
+				m_devmode_dmacolorwidth=8;
+			}
+			else
+			{
+				// otherwise use a regular red gradient, with brightness indicating % of DMA used
+				m_devmode_dmacolor = ((maria_cycles*0x0f)/428);
+				if (m_devmode_dmacolor>0x0f)
+					m_devmode_dmacolor=0x0f;
+				m_devmode_dmacolor|=0x40;
+				m_devmode_dmacolorwidth=4;
+			}
+		}
+
 		// If MARIA used up all of the DMA time then the CPU can't run until next line...
 		if (maria_cycles>=DMALIMIT)
 		{
@@ -318,6 +337,13 @@ void atari_maria_device::display_visible(int pixelx)
 	int d, pixel_cell;
 
 	int standby_buffer = !m_active_buffer; // display using the non-active buffer
+
+	if (m_devmode_flag && (pixelx<m_devmode_dmacolorwidth))
+	{
+		scanline[2 * pixelx]      = m_devmode_dmacolor;
+		scanline[2 * pixelx + 1 ] = m_devmode_dmacolor;
+		return;
+	}
 
 	switch (m_rm)
 	{

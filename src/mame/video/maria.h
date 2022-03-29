@@ -20,6 +20,10 @@ public:
 	void startdma(int lines);
 	void display_visible(int pixelx);
 
+	int m_devmode_flag;
+	int m_devmode_dmacolor;
+	int m_devmode_dmacolorwidth;
+
 	DECLARE_READ8_MEMBER(read);
 	DECLARE_WRITE8_MEMBER(write);
 
