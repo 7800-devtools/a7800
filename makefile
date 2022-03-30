@@ -16,6 +16,8 @@ REGENIE = 1
 STRIP_SYMBOLS = 1
 OPTIMIZE = 3
 SOURCES = src/mame/drivers/a7800.cpp
+#ARCHOPTS = -march=sandybridge 
+#PROFILE = 1
 
 # REGENIE = 1
 # VERBOSE = 1
@@ -1551,14 +1553,14 @@ endif
 
 ifeq (posix,$(SHELLTYPE))
 $(GENDIR)/version.cpp: $(GENDIR)/git_desc | $(GEN_FOLDERS)
-	@echo '#define BARE_BUILD_VERSION "4.0"' > $@
+	@echo '#define BARE_BUILD_VERSION "5.0"' > $@
 	@echo 'extern const char bare_build_version[];' >> $@
 	@echo 'extern const char build_version[];' >> $@
 	@echo 'const char bare_build_version[] = BARE_BUILD_VERSION;' >> $@
 	@echo 'const char build_version[] = BARE_BUILD_VERSION " A7800";' >> $@
 else
 $(GENDIR)/version.cpp: $(GENDIR)/git_desc
-	@echo #define BARE_BUILD_VERSION "4.0" > $@
+	@echo #define BARE_BUILD_VERSION "4.1" > $@
 	@echo extern const char bare_build_version[]; >> $@
 	@echo extern const char build_version[]; >> $@
 	@echo const char bare_build_version[] = BARE_BUILD_VERSION; >> $@
