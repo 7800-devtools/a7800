@@ -1152,7 +1152,7 @@ void menu_select_software::make_topbox_text(std::string &line0, std::string &lin
 	// determine the text for the header
 	int vis_item = !m_search.empty() ? visible_items : (m_has_empty_start ? visible_items - 1 : visible_items);
 	//line0 = string_format(_("%1$s %2$s ( %3$d / %4$d software packages )"), emulator_info::get_appname(), bare_build_version, vis_item, m_swinfo.size() - 1);
-	line0 = string_format(_("%1$s %2$s ( 4 configurations )"), emulator_info::get_appname(), bare_build_version, vis_item, m_swinfo.size() - 1);
+	line0 = string_format(_("%1$s %2$s ( 3 configurations )"), emulator_info::get_appname(), bare_build_version, vis_item, m_swinfo.size() - 1);
 	//line1 = string_format(_("Driver: \"%1$s\" software list "), m_driver->type.fullname());
 	line1 = string_format(_("Driver: \"%1$s\" hardware list "), m_driver->type.fullname());
 
