@@ -1643,7 +1643,7 @@ void menu_select_game::make_topbox_text(std::string &line0, std::string &line1, 
 	inifile_manager &inifile = mame_machine_manager::instance()->inifile();
 
 	//line0 = string_format(_("%1$s %2$s ( %3$d / %4$d machines (%5$d BIOS) )"),
-	line0 = string_format(_("%1$s %2$s ( 6 machines (2 regions / 3 temperatures) )"),
+	line0 = string_format(_("%1$s %2$s ( 8 machines )"),
 			emulator_info::get_appname(),
 			bare_build_version,
 			visible_items,
