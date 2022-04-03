@@ -301,7 +301,7 @@ private:
 	void step_keyboard();
 	void step_pot();
 
-	void poly_init_4_5(uint32_t *poly, int size, int xorbit, int invert);
+	void poly_init_4_5(uint32_t *poly, int size);
 	void poly_init_9_17(uint32_t *poly, int size);
 
 	void vol_init();

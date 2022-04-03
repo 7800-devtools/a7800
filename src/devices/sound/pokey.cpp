@@ -242,8 +242,8 @@ void pokey_device::device_start()
 	 */
 
 	/* initialize the poly counters */
-	poly_init_4_5(m_poly4, 4, 1, 0);
-	poly_init_4_5(m_poly5, 5, 2, 1);
+	poly_init_4_5(m_poly4, 4);
+	poly_init_4_5(m_poly5, 5);
 
 	/* initialize 9 / 17 arrays */
 	poly_init_9_17(m_poly9,   9);
@@ -993,7 +993,7 @@ void pokey_device::write_internal(offs_t offset, uint8_t data)
 		LOG_SOUND(("POKEY '%s' AUDCTL $%02x (%s)\n", tag(), data, audctl2str(data)));
 		m_AUDCTL = data;
 
-/* 
+/* */
 		printf(" POKEY AUDCTL=0x%02x%s%s%s%s%s%s%s%s\n"
 		, m_AUDCTL
                 , m_AUDCTL & 0x80 ? ", 9-bit poly" : ", 17-bit poly"
@@ -1004,7 +1004,7 @@ void pokey_device::write_internal(offs_t offset, uint8_t data)
                 , m_AUDCTL & 0x04 ? ", highpass 1+3" : ""
                 , m_AUDCTL & 0x02 ? ", highpass 2+4" : ""
                 , m_AUDCTL & 0x01 ? ", 15KHz" : ", 64KHz");
-*/
+/* */
 
 		break;
 
@@ -1095,13 +1095,13 @@ void pokey_device::write_internal(offs_t offset, uint8_t data)
 			m_clock_cnt[2] = 0;
 			/* FIXME: Serial port reset ! */
 		}
-/* 
+/* */
 		printf(" POKEY SKCTL=0x%02x%s%s%s\n"
 		, m_SKCTL
 		, m_SKCTL & 0x80 ? ", force break" : ""
 		, m_SKCTL & 0x08 ? ", two-tone mode" : ""
 		, m_SKCTL & 0x04 ? ", fast pot scan" : "");
-*/
+/* */
 		break;
 	}
 
@@ -1141,7 +1141,11 @@ inline void pokey_device::process_channel(int ch)
 	if ((m_channel[ch].m_AUDC & NOTPOLY5) || (m_poly5[m_p5] & 1))
 	{
 		if (m_channel[ch].m_AUDC & PURE)
+		{
+			//m_channel[ch].m_div2 = ((m_channel[ch].m_div2) + 1) &15 ;
+			//m_channel[ch].m_output ^= (m_channel[ch].m_div2 >> 3) & 1 ;
 			m_channel[ch].m_output ^= 1;
+		}
 		else if (m_channel[ch].m_AUDC & POLY4)
 			m_channel[ch].m_output = (m_poly4[m_p4] & 1);
 		else if (m_AUDCTL & POLY9)
@@ -1230,30 +1234,39 @@ void pokey_device::vol_init()
 
 }
 
-void pokey_device::poly_init_4_5(uint32_t *poly, int size, int xorbit, int invert)
+void pokey_device::poly_init_4_5(uint32_t *poly, int size)
 {
         int mask = (1 << size) - 1;
         int i;
         uint32_t lfsr = 0;
 
         LOG_POLY(("poly %d\n", size));
-        for( i = 0; i < mask; i++ )
-        {
-                // calculate next bit
-                int in = !((lfsr >> 0) & 1) ^ ((lfsr >> xorbit) & 1);
-                lfsr = lfsr >> 1;
-                lfsr = (in << (size-1)) | lfsr;
-                *poly = lfsr ^ invert;
-                LOG_POLY(("%05x: %02x\n", i, *poly));
-                poly++;
-        }
+
+	if(size==4)
+	{
+        	for( i = 0; i < mask; i++ )
+		{
+			lfsr = (lfsr+lfsr) + (~((lfsr >> 2) ^ (lfsr >> 3)) & 1);
+                	*poly = lfsr & mask;
+			poly++;
+		}
+	}
+	if(size==5)
+	{
+        	for( i = 0; i < mask; i++ )
+		{
+			lfsr = (lfsr+lfsr) + (~((lfsr >> 2) ^ (lfsr >> 4)) & 1);
+                	*poly = lfsr & mask;
+			poly++;
+		}
+	}
 }
 
 void pokey_device::poly_init_9_17(uint32_t *poly, int size)
 {
 	int mask = (1 << size) - 1;
 	int i;
-	uint32_t lfsr =mask;
+	uint32_t lfsr = mask;
 
 	LOG_RAND(("rand %d\n", size));
 
