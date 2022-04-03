@@ -1266,26 +1266,35 @@ void pokey_device::poly_init_9_17(uint32_t *poly, int size)
 {
 	int mask = (1 << size) - 1;
 	int i;
-	uint32_t lfsr = 0;
+	uint32_t lfsr = mask;
 
 	LOG_RAND(("rand %d\n", size));
+
+
 
 	if (size == 17)
 	{
 		for( i = 0; i < mask; i++ )
 		{
-			lfsr = (lfsr >> 1) + (~((lfsr << 16) ^ (lfsr << 11)) & 0x10000);
-			*poly = ((lfsr >> 9) & mask) ^ mask;
-			poly++;
+			int in8 = ((lfsr >> 8) & 1) ^ ((lfsr >> 13) & 1);
+			int in = (lfsr & 1);
+			lfsr = lfsr >> 1;
+			lfsr = (lfsr & 0xff7f) | (in8 << 7);
+			lfsr = (in << 16) | lfsr;
+			*poly = lfsr;
+			LOG_RAND(("%05x: %02x\n", i, *poly));
 		}
 	}
 	else // size == 9
 	{
 		for( i = 0; i < mask; i++ )
 		{
-			lfsr = (lfsr >> 1) + (~((lfsr << 8) ^ (lfsr << 3)) & 0x100);
-			*poly = (lfsr & mask) ^ mask;
-			poly++;
+			// calculate next bit
+			int in = ((lfsr >> 0) & 1) ^ ((lfsr >> 5) & 1);
+			lfsr = lfsr >> 1;
+			lfsr = (in << 8) | lfsr;
+			*poly = lfsr;
+			LOG_RAND(("%05x: %02x\n", i, *poly));
 		}
 	}
 }
