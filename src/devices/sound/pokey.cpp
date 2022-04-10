@@ -9,6 +9,11 @@
  *  paddle (a/d conversion) details from the Atari 400/800 Hardware Manual.
  *  Polynomial algorithms according to info supplied by Perry McFarlane.
  *
+ *  4.8 (a7800):
+ *  - Poly5 related modes had a pitch shift issue. The poly4/5 init routine 
+ *    was replaced with one based on Altira's implementation, which resolved
+ *    the issue.
+ *
  *  4.7 (a7800):
  *    [1] https://www.virtualdub.org/downloads/Altirra%20Hardware%20Reference%20Manual.pdf
  *  - updated to reflect that borrowing cycle delays only impacts voices
@@ -91,9 +96,9 @@
 #define POKEY_DEFAULT_GAIN (32767/11/4)
 
 #define VERBOSE         0
-#define VERBOSE_SOUND   0
+#define VERBOSE_SOUND   1
 #define VERBOSE_TIMER   0
-#define VERBOSE_POLY    1
+#define VERBOSE_POLY    0
 #define VERBOSE_RAND    0
 
 #define LOG(x) do { if (VERBOSE) logerror x; } while (0)
@@ -993,7 +998,7 @@ void pokey_device::write_internal(offs_t offset, uint8_t data)
 		LOG_SOUND(("POKEY '%s' AUDCTL $%02x (%s)\n", tag(), data, audctl2str(data)));
 		m_AUDCTL = data;
 
-/* 
+/* */
 		printf(" POKEY AUDCTL=0x%02x%s%s%s%s%s%s%s%s\n"
 		, m_AUDCTL
                 , m_AUDCTL & 0x80 ? ", 9-bit poly" : ", 17-bit poly"
@@ -1004,7 +1009,7 @@ void pokey_device::write_internal(offs_t offset, uint8_t data)
                 , m_AUDCTL & 0x04 ? ", highpass 1+3" : ""
                 , m_AUDCTL & 0x02 ? ", highpass 2+4" : ""
                 , m_AUDCTL & 0x01 ? ", 15KHz" : ", 64KHz");
-*/
+/* */
 
 		break;
 
@@ -1095,13 +1100,13 @@ void pokey_device::write_internal(offs_t offset, uint8_t data)
 			m_clock_cnt[2] = 0;
 			/* FIXME: Serial port reset ! */
 		}
-/*
+/* */
 		printf(" POKEY SKCTL=0x%02x%s%s%s\n"
 		, m_SKCTL
 		, m_SKCTL & 0x80 ? ", force break" : ""
 		, m_SKCTL & 0x08 ? ", two-tone mode" : ""
 		, m_SKCTL & 0x04 ? ", fast pot scan" : "");
-*/
+/* */
 		break;
 	}
 
@@ -1283,6 +1288,7 @@ void pokey_device::poly_init_9_17(uint32_t *poly, int size)
 			lfsr = (in << 16) | lfsr;
 			*poly = lfsr;
 			LOG_RAND(("%05x: %02x\n", i, *poly));
+			poly++;
 		}
 	}
 	else // size == 9
