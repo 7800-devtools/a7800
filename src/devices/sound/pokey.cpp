@@ -666,41 +666,6 @@ uint32_t pokey_device::step_one_clock(void)
 			step_keyboard();
 	}
 
-	if (m_channel[CHAN1].check_borrow())
-	{
-		int isJoined = (m_AUDCTL & CH12_JOINED);
-
-		if (isJoined)
-			m_channel[CHAN2].inc_chan(1);
-		else
-			m_channel[CHAN1].reset_channel();
-
-		process_channel(CHAN1);
-
-		// check if some of the requested timer interrupts are enabled
-		if ((m_IRQST & IRQ_TIMR1) && !m_irq_f.isnull())
-			m_irq_f(IRQ_TIMR1);
-	}
-
-
-	if (m_channel[CHAN2].check_borrow())
-	{
-		int isJoined = (m_AUDCTL & CH12_JOINED);
-		if (isJoined)
-			m_channel[CHAN1].reset_channel();
-
-		if (m_SKCTL & SK_TWOTONE)
-			m_channel[CHAN1].reset_channel();
-
-		m_channel[CHAN2].reset_channel();
-
-		process_channel(CHAN2);
-
-		// check if some of the requested timer interrupts are enabled
-		if ((m_IRQST & IRQ_TIMR2) && !m_irq_f.isnull())
-				m_irq_f(IRQ_TIMR2);
-	}
-
 	if (m_channel[CHAN3].check_borrow())
 	{
 		int isJoined = (m_AUDCTL & CH34_JOINED);
@@ -708,6 +673,7 @@ uint32_t pokey_device::step_one_clock(void)
 			m_channel[CHAN4].inc_chan(1);
 		else
 			m_channel[CHAN3].reset_channel();
+
 		process_channel(CHAN3);
 		/* is this a filtering channel (3/4) and is the filter active? */
 		if (m_AUDCTL & CH1_FILTER)
@@ -731,6 +697,42 @@ uint32_t pokey_device::step_one_clock(void)
 			m_channel[CHAN2].m_filter_sample = 1;
 		if ((m_IRQST & IRQ_TIMR4) && !m_irq_f.isnull())
 			m_irq_f(IRQ_TIMR4);
+	}
+
+	if ( (m_SKCTL & SK_TWOTONE) && (m_channel[CHAN2].m_borrow_cnt == 1) )
+		m_channel[CHAN1].reset_channel();
+
+	if (m_channel[CHAN1].check_borrow())
+	{
+		int isJoined = (m_AUDCTL & CH12_JOINED);
+
+		if (isJoined)
+			m_channel[CHAN2].inc_chan(1);
+		else
+			m_channel[CHAN1].reset_channel();
+
+		// TODO: If two-tone is enabled *and* serial output == 1 then reset the channel 2 timer.
+
+		process_channel(CHAN1);
+
+		// check if some of the requested timer interrupts are enabled
+		if ((m_IRQST & IRQ_TIMR1) && !m_irq_f.isnull())
+			m_irq_f(IRQ_TIMR1);
+	}
+
+	if (m_channel[CHAN2].check_borrow())
+	{
+		int isJoined = (m_AUDCTL & CH12_JOINED);
+		if (isJoined)
+			m_channel[CHAN1].reset_channel();
+
+		m_channel[CHAN2].reset_channel();
+
+		process_channel(CHAN2);
+
+		// check if some of the requested timer interrupts are enabled
+		if ((m_IRQST & IRQ_TIMR2) && !m_irq_f.isnull())
+				m_irq_f(IRQ_TIMR2);
 	}
 
 
@@ -998,7 +1000,7 @@ void pokey_device::write_internal(offs_t offset, uint8_t data)
 		LOG_SOUND(("POKEY '%s' AUDCTL $%02x (%s)\n", tag(), data, audctl2str(data)));
 		m_AUDCTL = data;
 
-/* */
+/* 
 		printf(" POKEY AUDCTL=0x%02x%s%s%s%s%s%s%s%s\n"
 		, m_AUDCTL
                 , m_AUDCTL & 0x80 ? ", 9-bit poly" : ", 17-bit poly"
@@ -1009,7 +1011,7 @@ void pokey_device::write_internal(offs_t offset, uint8_t data)
                 , m_AUDCTL & 0x04 ? ", highpass 1+3" : ""
                 , m_AUDCTL & 0x02 ? ", highpass 2+4" : ""
                 , m_AUDCTL & 0x01 ? ", 15KHz" : ", 64KHz");
-/* */
+*/
 
 		break;
 
@@ -1100,13 +1102,13 @@ void pokey_device::write_internal(offs_t offset, uint8_t data)
 			m_clock_cnt[2] = 0;
 			/* FIXME: Serial port reset ! */
 		}
-/* */
+/* 
 		printf(" POKEY SKCTL=0x%02x%s%s%s\n"
 		, m_SKCTL
 		, m_SKCTL & 0x80 ? ", force break" : ""
 		, m_SKCTL & 0x08 ? ", two-tone mode" : ""
 		, m_SKCTL & 0x04 ? ", fast pot scan" : "");
-/* */
+*/
 		break;
 	}
 
@@ -1146,11 +1148,7 @@ inline void pokey_device::process_channel(int ch)
 	if ((m_channel[ch].m_AUDC & NOTPOLY5) || (m_poly5[m_p5] & 1))
 	{
 		if (m_channel[ch].m_AUDC & PURE)
-		{
-			//m_channel[ch].m_div2 = ((m_channel[ch].m_div2) + 1) &15 ;
-			//m_channel[ch].m_output ^= (m_channel[ch].m_div2 >> 3) & 1 ;
 			m_channel[ch].m_output ^= 1;
-		}
 		else if (m_channel[ch].m_AUDC & POLY4)
 			m_channel[ch].m_output = (m_poly4[m_p4] & 1);
 		else if (m_AUDCTL & POLY9)
