@@ -517,7 +517,7 @@ image_init_result a78_cart_slot_device::call_load()
 			m_cart->rom_alloc(len, tag());
 			fread(m_cart->get_rom_base(), len);
 
-			if (m_type == A78_TYPE6 || m_type == A78_TYPE8)
+			if (m_type == A78_TYPE6 || m_type == A78_TYPE8 || m_type == A78_TYPE6_POK800 || m_type == A78_TYPE6_POK450)
 				m_cart->ram_alloc(0x4000);
 			if (m_type == A78_MEGACART || (m_type == A78_BANKSET_SG_BANKRAM) || (m_type == A78_BANKSET_SG_BANKRAM_POK800) || (m_type == A78_BANKSET_BANKRAM) || (m_type == A78_BANKSET_BANKRAM_POK800) || (m_type >= A78_VERSABOARD && m_type <= A78_VERSA_POK450))
 				m_cart->ram_alloc(0x8000);

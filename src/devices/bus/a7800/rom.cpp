@@ -47,7 +47,7 @@ DEFINE_DEVICE_TYPE(A78_ROM_P450_SG9,    a78_rom_p450_sg9_device,    "a78_p450_ta
 DEFINE_DEVICE_TYPE(A78_ROM_P800,        a78_rom_p800_device,        "a78_p800_t0",  "Atari 7800 ROM Carts w/POKEY @ 0x0800")
 DEFINE_DEVICE_TYPE(A78_ROM_P800_POKEY,  a78_rom_p800_pokey_device,  "a78_p800_t1",  "Atari 7800 ROM Carts w/no Bankswitch + POKEY + POKEY @ 0x0800")
 DEFINE_DEVICE_TYPE(A78_ROM_P800_SG,     a78_rom_p800_sg_device,     "a78_p800_t2",  "Atari 7800 ROM Carts w/SuperGame Bankswitch + POKEY @ 0x0800")
-DEFINE_DEVICE_TYPE(A78_ROM_P800_SG_RAM, a78_rom_p800_sg_ram_device, "a78_p800_t6",  "Atari 7800 ROM Carts w/SuperGame Bankswitch + RAM + POKEY @ 0x0800")
+DEFINE_DEVICE_TYPE(A78_ROM_P800_SG_RAM, a78_rom_p800_sg_ram_device, "a78_p800_t6",  "Atari 7800 ROM Carts w/SuperGame Bankswitch + RAM0 0x800")
 DEFINE_DEVICE_TYPE(A78_ROM_P800_SG9,    a78_rom_p800_sg9_device,    "a78_p800_ta",  "Atari 7800 ROM Carts w/SuperGame 9Banks + POKEY @ 0x0800")
 
 
