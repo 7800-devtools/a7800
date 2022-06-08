@@ -266,7 +266,7 @@ void pokey_device::device_start()
 	 */
 
 	m_KBCODE = 0x09;         /* Atari 800 'no key' */
-	m_SKCTL = SK_RESET;  /* let the RNG run after reset */
+	m_SKCTL = 0;
 	m_SKSTAT = 0;
 	/* This bit should probably get set later. Acid5200 pokey_setoc test tests this. */
 	m_IRQST = IRQ_SEROC;
@@ -1302,6 +1302,7 @@ void pokey_device::poly_init_9_17(uint32_t *poly, int size)
 			lfsr = (in << 8) | lfsr;
 			*poly = lfsr;
 			LOG_RAND(("%05x: %02x\n", i, *poly));
+			poly++;
 		}
 	}
 }
