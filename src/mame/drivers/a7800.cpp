@@ -2,135 +2,162 @@
 // copyright-holders:Dan Boris, Fabio Priuli, Mike Saarna, Robert Tuccitto
 /***************************************************************************
 
-  a7800.c
+a7800.c
 
-  Driver file to handle emulation of the Atari 7800.
+Driver file to handle emulation of the Atari 7800.
 
-  Dan Boris
+Dan Boris
 
-    2002/05/13 kubecj   added more banks for bankswitching
-                        added PAL machine description
-                        changed clock to be precise
-                        improved cart emulation (in machine/)
+2002/05/13 kubecj
+		-added more banks for bankswitching
+		-added PAL machine description
+                -changed clock to be precise
+                -improved cart emulation (in machine/).
 
-    2012/10/25 Robert Tuccitto  NTSC Color Generator utilized for
-                color palette with hue shift/start
-                based on observation of several
-                systems across multiple displays
+2012/10/25 Robert Tuccitto 
+		-NTSC Color Generator utilized for
+                 color palette with hue shift/start
+                 based on observation of several
+                 systems across multiple displays.
 
-    2012/11/09 Robert Tuccitto  Fixed 3 degree hue begin point
-                miscalculation of color palette
+2012/11/09 Robert Tuccitto
+		-Fixed 3 degree hue begin point
+                 miscalculation of color palette.
 
-    2012/12/05 Robert Tuccitto  Implemented proper IRE and phase
-               value to the palette
+2012/12/05 Robert Tuccitto  
+		-Implemented proper IRE and phase
+  		 value to the palette.
 
-    2012/12/14 Robert Tuccitto  Adjusted colorburst/tint/hue of entire
-               palette to closer reflect default hardware configuration
-               setting of ~180 degrees.  Palette settings now correspond
-               documented and calculated settings as follows:
+2012/12/14 Robert Tuccitto  
+		-Adjusted colorburst/tint/hue of entire
+		 palette to closer reflect default hardware 
+  		 configuration setting of ~180 degrees.  Palette 
+    		 settings now correspond documented and 
+      		 calculated settings as follows:
+			Contrast = 0.0526 --> 0.05
+			Brightness = 0.0 --> 0.00
+			Color = 0.2162 --> 0.22
+        		Phase = 25.714 --> 25.7
+			Colorburst/Hue = 180 degrees
 
-               Contrast = 0.0526 --> 0.05
-               Brightness = 0.0 --> 0.00
-               Color = 0.2162 --> 0.22
-               Phase = 25.714 --> 25.7
-               Colorburst/Hue = 180 degrees
+2013/02/27 Robert Tuccitto 
+		-Palette rebuild due to misaligned data
+  		 references.
+  		-Corrected PAL color sequence order.
 
-    2013/02/27 Robert Tuccitto  Palette rebuild due to misaligned
-               data references.  Corrected PAL color sequence order.
+2013/03/19 Robert Tuccitto
+		-Stripped palette to raw video output values 
+  		 removing YIQ/YUV infer data.
 
-    2013/03/19 Robert Tuccitto  Stripped palette to raw video output
-               values removing YIQ/YUV infer data.
+2013/04/02 Robert Tuccitto  
+		-Corrected rotation values and errors including 
+  		 duplicate entries for palette.
 
-    2013/04/02 Robert Tuccitto  Corrected rotation values and errors
-               including duplicate entries for palette.
+2013/04/07 Robert Tuccitto  
+		-Address map locations for the XBOARD added.
 
-    2013/04/07 Robert Tuccitto  Address map locations for the XBOARD
-               added.
+2013/05/01 Robert Tuccitto
+		-Red and Blue miscalculated proportions fixed.
 
-    2013/05/01 Robert Tuccitto  Red and Blue miscalculated proportions
-               fixed.
+2013/08/04 Robert Tuccitto
+		-Green miscalculated proportions fixed.
 
-    2013/08/04 Robert Tuccitto  Green miscalculated proportions fixed.
+2013/08/13 Robert Tuccitto
+		-Normalized contrast and brightness, providing a 
+  		 standardize grayscale and adjusted color values.
 
-    2013/08/13 Robert Tuccitto  Normalized contrast and brightness,
-               providing a standardize grayscale and adjusted color values.
+2013/09/02 Robert Tuccitto
+		-Stored data for 26.7 & 27.7 phase shifts with
+  		 corrections and label for 25.7 values. Made 26.7
+    		 (medium) default. Phase shifting falls outside the
+      		 realm of video controls and hope to implement a
+		 selectable toggle hardware option similar to Donkey 
+  		 Kong TKG02/TKG04.
 
-    2013/09/02 Robert Tuccitto  Stored data for 26.7 & 27.7 phase shifts
-               with corrections and label for 25.7 values. Made 26.7
-               (medium) default. Phase shifting falls outside the realm of
-               video controls and hope to implement a selectable toggle
-               hardware option similar to Donkey Kong TKG02/TKG04.
+2013/09/19 Robert Tuccitto
+		-Cleanup of Address Maps, high score maps added.
 
-    2013/09/19 Robert Tuccitto  Cleanup of Address Maps, high score maps
-               added.
+2013/10/16 Robert Tuccitto  
+		-Added Phase Shifts 24.7, 25.2, 26.2, 27.2. Phase 
+  		 Shifts 24.7 through 27.7 degrees with 0.5 degree
+		 increments documented. 
+   		-Phase Shift 26.2 degrees made active.
+     		-Fixed typo under 26.7 7$.
 
-    2013/10/16 Robert Tuccitto  Added Phase Shifts 24.7, 25.2, 26.2, 27.2.
-               Phase Shifts 24.7 through 27.7 degrees with 0.5 degree
-               increments documented. Phase Shift 26.2 degrees made active.
-               Fixed typo under 26.7 7$.
+2013/10/27 Robert Tuccitto
+		-Modernized screen parameters for NTSC & PAL.
 
-    2013/10/27 Robert Tuccitto  Modernized screen parameters for NTSC & PAL.
+2013/11/03 Robert Tuccitto
+		-Fixed correctly typo under 26.7 7$.
 
-    2013/11/03 Robert Tuccitto  Fixed correctly typo under 26.7 7$.
+2013/11/23 Robert Tuccitto
+		-Added NTSC Palette Notes.
 
-    2013/11/23 Robert Tuccitto  Added NTSC Palette Notes.
+2014/01/02 Robert Tuccitto
+		-Corrected joystick buttons assignment & minor
+                 palette notes cleanup.
 
-    2014/01/02 Robert Tuccitto  Corrected joystick buttons assignment & minor
-                                palette notes cleanup.
+2014/01/09 Robert Tuccitto  
+		-Positional description for difficulty switches 
+  		 added.
 
-    2014/01/09 Robert Tuccitto  Positional description for difficulty
-                                switches added.
+2014/02/15 Robert Tuccitto  
+		-Added more details and clarification regarding 
+  		 the potentiometer.
 
-    2014/02/15 Robert Tuccitto  Added more details and clarification
-                                regarding the potentiometer.
+2014/03/25 Mike Saarna
+		-Fixed Riot Timer.
 
-    2014/03/25 Mike Saarna  Fixed Riot Timer
+2014/04/04 Mike Saarna  
+		-Fix to controller button RIOT behavior.
 
-    2014/04/04 Mike Saarna  Fix to controller button RIOT behavior
+2014/05/06 Mike Saarna/Robert Tuccitto 
+		-Brought initial Maria cycle counts inline from 
+  		 measurements taken with logic analyzer and tests.
 
-    2014/05/06 Mike Saarna/Robert Tuccitto Brought initial Maria cycle counts
-               inline from measurements taken with logic analyzer and tests.
+2014/08/25 Fabio Priuli
+		-Converted carts to be slot devices and cleaned up 
+  		 the driver (removed the pokey, cleaned up rom 
+    		 regions, etc.)
 
-    2014/08/25 Fabio Priuli Converted carts to be slot devices and cleaned
-               up the driver (removed the pokey, cleaned up rom regions, etc.)
+2017/07/14 Mike Saarna/Robert Tuccito   
+		-Converted to slotted controls and added support 
+  		 for proline joysticks, vcs joysticks, paddles,
+    		 lightguns, keypads, driving wheels, cx22 trakballs, 
+      		 amiga mice, st mice/cx80. 
 
-    2017/07/14 Mike Saarna/Robert Tuccito   Converted to slotted controls and
-               added support for proline joysticks, vcs joysticks, paddles,
-               lightguns, keypads, driving wheels, cx22 trakballs, amiga mice, 
-               st mice/cx80. 
+2020/06/10 Mike Saarna/Robert Tuccitto 
+		-Implementation of XM control registers updated.
+		-SALLY (CPU) and MARIA (Graphics chip) performance adjustments.
+  		-Additional display options and enhancements.
+		-Audio indication of no ROM loaded silenced.
+		-corrected ST and Amiga mouse button behavior.
+		-7800 bios files made optional. (with warning when absent)
+		-minor POKEY audio emulation improvements.
 
-	2020/06/10 Mike Saarna/Robert Tuccitto 
-				-Implementation of XM control registers updated.
-				-SALLY (CPU) and MARIA (Graphics chip) performance adjustments.
-				-Additional display options and enhancements.
-				-Audio indication of no ROM loaded silenced.
-				-corrected ST and Amiga mouse button behavior.
-				-7800 bios files made optional. (with warning when absent)
-				-minor POKEY audio emulation improvements.
+2022/03/31 Mike Saarna/Robert Tuccitto
+		-graphical register updates made mid-scanline are now displayed mid-scanline.
+		-bankset bankswitching support added.
+		-pokey emulation quality improvements.
+		-improved lightgun emulation accuracy.
+		-a7800dev and a7800pdev machine targets added, which display DMA usage per-scanline.
+		-balanced palette brightness and saturation.
+		-pokey@800 added for non-banked, supergame, and bankset formats.
 
-	2022/03/31 Mike Saarna/Robert Tuccitto
-				-graphical register updates made mid-scanline are now displayed mid-scanline.
-				-bankset bankswitching support added.
-				-pokey emulation quality improvements.
-				-improved lightgun emulation accuracy.
-				-a7800dev and a7800pdev machine targets added, which display DMA usage per-scanline.
-				-balanced palette brightness and saturation.
-				-pokey@800 added for non-banked, supergame, and bankset formats.
+2022/05/02 Mike Saarna
+		-pokey emulation updated for better two-tone mode accuracy
+		-fix for cart format supergame+ram+pokey@800 crash
 
-	2022/05/02 Mike Saarna
-				-pokey emulation updated for better two-tone mode accuracy
-				-fix for cart format supergame+ram+pokey@800 crash
+2022/06/26 Mike Saarna
+		-pokey poly9 sequence correction
+		-pokey init state corrected to match real hardware
 
-	2022/06/26 Mike Saarna
-				-pokey poly9 sequence correction
-				-pokey init state corrected to match real hardware
-
-	2023/08/23 Robert Tuccitto
-				-Palettes updated:
-					-fixed luma value correlation to hue begin point.
-					-improved duplication of hue behaviors according to temperature.
-					-fine adjustment to midrange hues.
-					-tweaked overall brightness balancing.
+2023/08/23 Robert Tuccitto
+		-Palettes updated:
+		-fixed luma value correlation to hue begin point.
+		-improved duplication of hue behaviors according to temperature.
+		-fine adjustment to midrange hues.
+		-tweaked overall brightness balancing.
 
 ***************************************************************************/
 
@@ -670,16 +697,16 @@ the non-artifact colors.
 ***************************************************************************/
 
 #define NTSC_HUE0_PAL_HUE0 \
-    rgb_t(0x00,0x00,0x00), rgb_t(0x0D,0x0D,0x0D), rgb_t(0x25,0x25,0x25), rgb_t(0x3A,0x3A,0x3A), \
-    rgb_t(0x4D,0x4D,0x4D), rgb_t(0x5F,0x5F,0x5F), rgb_t(0x71,0x71,0x71), rgb_t(0x82,0x82,0x82), \
-    rgb_t(0x93,0x93,0x93), rgb_t(0xA3,0xA3,0xA3), rgb_t(0xB3,0xB3,0xB3), rgb_t(0xC3,0xC3,0xC3), \
-    rgb_t(0xD2,0xD2,0xD2), rgb_t(0xE1,0xE1,0xE1), rgb_t(0xF0,0xF0,0xF0), rgb_t(0xFF,0xFF,0xFF   )
+    	rgb_t(0x00,0x00,0x00), rgb_t(0x0D,0x0D,0x0D), rgb_t(0x25,0x25,0x25), rgb_t(0x3A,0x3A,0x3A), \
+	rgb_t(0x4D,0x4D,0x4D), rgb_t(0x5F,0x5F,0x5F), rgb_t(0x71,0x71,0x71), rgb_t(0x82,0x82,0x82), \
+	rgb_t(0x93,0x93,0x93), rgb_t(0xA3,0xA3,0xA3), rgb_t(0xB3,0xB3,0xB3), rgb_t(0xC3,0xC3,0xC3), \
+	rgb_t(0xD2,0xD2,0xD2), rgb_t(0xE1,0xE1,0xE1), rgb_t(0xF0,0xF0,0xF0), rgb_t(0xFF,0xFF,0xFF   )
 
 #define NTSC_HUE1_PAL_HUE2 \
 	rgb_t(0x16,0x01,0x00), rgb_t(0x2C,0x1C,0x00), rgb_t(0x41,0x32,0x00), rgb_t(0x53,0x45,0x00), \
-    rgb_t(0x65,0x58,0x00), rgb_t(0x77,0x6A,0x00), rgb_t(0x88,0x7B,0x00), rgb_t(0x98,0x8C,0x00), \
-    rgb_t(0xA8,0x9C,0x0D), rgb_t(0xB8,0xAC,0x24), rgb_t(0xC8,0xBC,0x39), rgb_t(0xD7,0xCC,0x4C), \
-    rgb_t(0xE6,0xDB,0x5F), rgb_t(0xF5,0xEA,0x70), rgb_t(0xFF,0xF9,0x81), rgb_t(0xFF,0xFF,0x92   )
+	rgb_t(0x65,0x58,0x00), rgb_t(0x77,0x6A,0x00), rgb_t(0x88,0x7B,0x00), rgb_t(0x98,0x8C,0x00), \
+	rgb_t(0xA8,0x9C,0x0D), rgb_t(0xB8,0xAC,0x24), rgb_t(0xC8,0xBC,0x39), rgb_t(0xD7,0xCC,0x4C), \
+	rgb_t(0xE6,0xDB,0x5F), rgb_t(0xF5,0xEA,0x70), rgb_t(0xFF,0xF9,0x81), rgb_t(0xFF,0xFF,0x92   )
 
 #define PAL_HUE1 \
 	rgb_t(0x00,0x11,0x00), rgb_t(0x18,0x28,0x00), rgb_t(0x2E,0x3D,0x00), rgb_t(0x42,0x50,0x00), \
@@ -689,15 +716,15 @@ the non-artifact colors.
 
 #define NTSC_HUE2_PAL_HUE3 \
 	rgb_t(0x37,0x00,0x00), rgb_t(0x4B,0x00,0x00), rgb_t(0x5D,0x19,0x00), rgb_t(0x6F,0x2F,0x00), \
-    rgb_t(0x80,0x43,0x00), rgb_t(0x91,0x56,0x00), rgb_t(0xA1,0x68,0x00), rgb_t(0xB1,0x79,0x05), \
-    rgb_t(0xC1,0x8A,0x1F), rgb_t(0xD0,0x9A,0x34), rgb_t(0xDF,0xAA,0x48), rgb_t(0xEE,0xBA,0x5A), \
-    rgb_t(0xFD,0xCA,0x6C), rgb_t(0xFF,0xD9,0x7D), rgb_t(0xFF,0xE8,0x8E), rgb_t(0xFF,0xF7,0x9E   )
+	rgb_t(0x80,0x43,0x00), rgb_t(0x91,0x56,0x00), rgb_t(0xA1,0x68,0x00), rgb_t(0xB1,0x79,0x05), \
+	rgb_t(0xC1,0x8A,0x1F), rgb_t(0xD0,0x9A,0x34), rgb_t(0xDF,0xAA,0x48), rgb_t(0xEE,0xBA,0x5A), \
+	rgb_t(0xFD,0xCA,0x6C), rgb_t(0xFF,0xD9,0x7D), rgb_t(0xFF,0xE8,0x8E), rgb_t(0xFF,0xF7,0x9E   )
 
 #define NTSC_HUE3_PAL_HUE4 \
 	rgb_t(0x49,0x00,0x00), rgb_t(0x5B,0x00,0x00), rgb_t(0x6D,0x00,0x00), rgb_t(0x7E,0x19,0x00), \
-    rgb_t(0x8F,0x2F,0x00), rgb_t(0x9F,0x43,0x08), rgb_t(0xAF,0x55,0x21), rgb_t(0xBF,0x67,0x36), \
-    rgb_t(0xCF,0x79,0x49), rgb_t(0xDE,0x8A,0x5C), rgb_t(0xED,0x9A,0x6E), rgb_t(0xFC,0xAA,0x7F), \
-    rgb_t(0xFF,0xBA,0x90), rgb_t(0xFF,0xCA,0xA0), rgb_t(0xFF,0xD9,0xB0), rgb_t(0xFF,0xE8,0xC0   )
+	rgb_t(0x8F,0x2F,0x00), rgb_t(0x9F,0x43,0x08), rgb_t(0xAF,0x55,0x21), rgb_t(0xBF,0x67,0x36), \
+	rgb_t(0xCF,0x79,0x49), rgb_t(0xDE,0x8A,0x5C), rgb_t(0xED,0x9A,0x6E), rgb_t(0xFC,0xAA,0x7F), \
+	rgb_t(0xFF,0xBA,0x90), rgb_t(0xFF,0xCA,0xA0), rgb_t(0xFF,0xD9,0xB0), rgb_t(0xFF,0xE8,0xC0   )
 
 #define NTSC_HUE4_PAL_HUE5 \
 	rgb_t(0x4B,0x00,0x00), rgb_t(0x5D,0x00,0x00), rgb_t(0x6F,0x00,0x08), rgb_t(0x80,0x07,0x21), \
@@ -830,16 +857,16 @@ PALETTE_INIT_MEMBER(a7800_state,a7800p)
 ***************************************************************************/
 
 #define NTSC_HUE0_PAL_HUE0_U1 \
-    rgb_t(0x00,0x00,0x00), rgb_t(0x0D,0x0D,0x0D), rgb_t(0x25,0x25,0x25), rgb_t(0x3A,0x3A,0x3A), \
-    rgb_t(0x4D,0x4D,0x4D), rgb_t(0x5F,0x5F,0x5F), rgb_t(0x71,0x71,0x71), rgb_t(0x82,0x82,0x82), \
-    rgb_t(0x93,0x93,0x93), rgb_t(0xA3,0xA3,0xA3), rgb_t(0xB3,0xB3,0xB3), rgb_t(0xC3,0xC3,0xC3), \
-    rgb_t(0xD2,0xD2,0xD2), rgb_t(0xE1,0xE1,0xE1), rgb_t(0xF0,0xF0,0xF0), rgb_t(0xFF,0xFF,0xFF   )
+	rgb_t(0x00,0x00,0x00), rgb_t(0x0D,0x0D,0x0D), rgb_t(0x25,0x25,0x25), rgb_t(0x3A,0x3A,0x3A), \
+	rgb_t(0x4D,0x4D,0x4D), rgb_t(0x5F,0x5F,0x5F), rgb_t(0x71,0x71,0x71), rgb_t(0x82,0x82,0x82), \
+	rgb_t(0x93,0x93,0x93), rgb_t(0xA3,0xA3,0xA3), rgb_t(0xB3,0xB3,0xB3), rgb_t(0xC3,0xC3,0xC3), \
+	rgb_t(0xD2,0xD2,0xD2), rgb_t(0xE1,0xE1,0xE1), rgb_t(0xF0,0xF0,0xF0), rgb_t(0xFF,0xFF,0xFF   )
 
 #define NTSC_HUE1_PAL_HUE2_U1 \
 	rgb_t(0x16,0x01,0x00), rgb_t(0x2C,0x1C,0x00), rgb_t(0x41,0x32,0x00), rgb_t(0x53,0x45,0x00), \
-    rgb_t(0x65,0x58,0x00), rgb_t(0x77,0x6A,0x00), rgb_t(0x88,0x7B,0x00), rgb_t(0x98,0x8C,0x00), \
-    rgb_t(0xA8,0x9C,0x0D), rgb_t(0xB8,0xAC,0x24), rgb_t(0xC8,0xBC,0x39), rgb_t(0xD7,0xCC,0x4C), \
-    rgb_t(0xE6,0xDB,0x5F), rgb_t(0xF5,0xEA,0x70), rgb_t(0xFF,0xF9,0x81), rgb_t(0xFF,0xFF,0x92   )
+	rgb_t(0x65,0x58,0x00), rgb_t(0x77,0x6A,0x00), rgb_t(0x88,0x7B,0x00), rgb_t(0x98,0x8C,0x00), \
+	rgb_t(0xA8,0x9C,0x0D), rgb_t(0xB8,0xAC,0x24), rgb_t(0xC8,0xBC,0x39), rgb_t(0xD7,0xCC,0x4C), \
+	rgb_t(0xE6,0xDB,0x5F), rgb_t(0xF5,0xEA,0x70), rgb_t(0xFF,0xF9,0x81), rgb_t(0xFF,0xFF,0x92   )
 
 #define PAL_HUE1_U1 \
 	rgb_t(0x00,0x11,0x00), rgb_t(0x18,0x28,0x00), rgb_t(0x2E,0x3D,0x00), rgb_t(0x42,0x50,0x00), \
@@ -849,15 +876,15 @@ PALETTE_INIT_MEMBER(a7800_state,a7800p)
 
 #define NTSC_HUE2_PAL_HUE3_U1 \
 	rgb_t(0x36,0x00,0x00), rgb_t(0x4A,0x00,0x00), rgb_t(0x5C,0x1A,0x00), rgb_t(0x6E,0x30,0x00), \
-    rgb_t(0x7F,0x44,0x00), rgb_t(0x90,0x56,0x00), rgb_t(0xA0,0x68,0x00), rgb_t(0xB0,0x7A,0x03), \
-    rgb_t(0xC0,0x8B,0x1D), rgb_t(0xCF,0x9B,0x33), rgb_t(0xDE,0xAB,0x46), rgb_t(0xEE,0xBB,0x59), \
-    rgb_t(0xFC,0xCB,0x6B), rgb_t(0xFF,0xDA,0x7C), rgb_t(0xFF,0xE9,0x8D), rgb_t(0xFF,0xF8,0x9D   )
+	rgb_t(0x7F,0x44,0x00), rgb_t(0x90,0x56,0x00), rgb_t(0xA0,0x68,0x00), rgb_t(0xB0,0x7A,0x03), \
+	rgb_t(0xC0,0x8B,0x1D), rgb_t(0xCF,0x9B,0x33), rgb_t(0xDE,0xAB,0x46), rgb_t(0xEE,0xBB,0x59), \
+	rgb_t(0xFC,0xCB,0x6B), rgb_t(0xFF,0xDA,0x7C), rgb_t(0xFF,0xE9,0x8D), rgb_t(0xFF,0xF8,0x9D   )
 
 #define NTSC_HUE3_PAL_HUE4_U1 \
 	rgb_t(0x48,0x00,0x00), rgb_t(0x5B,0x00,0x00), rgb_t(0x6C,0x0C,0x00), rgb_t(0x7E,0x1B,0x00), \
-    rgb_t(0x8E,0x30,0x00), rgb_t(0x9F,0x44,0x01), rgb_t(0xAF,0x57,0x1C), rgb_t(0xBE,0x69,0x32), \
-    rgb_t(0xCE,0x7A,0x45), rgb_t(0xDD,0x8B,0x58), rgb_t(0xEC,0x9B,0x6A), rgb_t(0xFB,0xAB,0x7B), \
-    rgb_t(0xFF,0xBB,0x8C), rgb_t(0xFF,0xCB,0x9C), rgb_t(0xFF,0xDA,0xAD), rgb_t(0xFF,0xE9,0xBC   )
+	rgb_t(0x8E,0x30,0x00), rgb_t(0x9F,0x44,0x01), rgb_t(0xAF,0x57,0x1C), rgb_t(0xBE,0x69,0x32), \
+	rgb_t(0xCE,0x7A,0x45), rgb_t(0xDD,0x8B,0x58), rgb_t(0xEC,0x9B,0x6A), rgb_t(0xFB,0xAB,0x7B), \
+	rgb_t(0xFF,0xBB,0x8C), rgb_t(0xFF,0xCB,0x9C), rgb_t(0xFF,0xDA,0xAD), rgb_t(0xFF,0xE9,0xBC   )
 
 #define NTSC_HUE4_PAL_HUE5_U1 \
 	rgb_t(0x4B,0x00,0x00), rgb_t(0x5E,0x00,0x00), rgb_t(0x6F,0x00,0x00), rgb_t(0x81,0x09,0x18), \
