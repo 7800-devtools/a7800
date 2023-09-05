@@ -11,18 +11,18 @@ Dan Boris
 2002/05/13 kubecj
 		-added more banks for bankswitching
 		-added PAL machine description
-                -changed clock to be precise
-                -improved cart emulation (in machine/).
+        -changed clock to be precise
+        -improved cart emulation (in machine/).
 
 2012/10/25 Robert Tuccitto 
 		-NTSC Color Generator utilized for
-                 color palette with hue shift/start
-                 based on observation of several
-                 systems across multiple displays.
+         color palette with hue shift/start
+         based on observation of several
+         systems across multiple displays.
 
 2012/11/09 Robert Tuccitto
 		-Fixed 3 degree hue begin point
-                 miscalculation of color palette.
+         miscalculation of color palette.
 
 2012/12/05 Robert Tuccitto  
 		-Implemented proper IRE and phase
@@ -32,13 +32,13 @@ Dan Boris
 		-Adjusted colorburst/tint/hue of entire
 		 palette to closer reflect default hardware 
   		 configuration setting of ~180 degrees.  Palette 
-    		 settings now correspond documented and 
-      		 calculated settings as follows:
-			Contrast = 0.0526 --> 0.05
-			Brightness = 0.0 --> 0.00
-			Color = 0.2162 --> 0.22
-        		Phase = 25.714 --> 25.7
-			Colorburst/Hue = 180 degrees
+    	 settings now correspond documented and 
+      	 calculated settings as follows:
+			*Contrast = 0.0526 --> 0.05
+			*Brightness = 0.0 --> 0.00
+			*Color = 0.2162 --> 0.22
+			*Phase = 25.714 --> 25.7
+			*Colorburst/Hue = 180 degrees
 
 2013/02/27 Robert Tuccitto 
 		-Palette rebuild due to misaligned data
@@ -69,8 +69,8 @@ Dan Boris
 2013/09/02 Robert Tuccitto
 		-Stored data for 26.7 & 27.7 phase shifts with
   		 corrections and label for 25.7 values. Made 26.7
-    		 (medium) default. Phase shifting falls outside the
-      		 realm of video controls and hope to implement a
+    	 (medium) default. Phase shifting falls outside the
+      	 realm of video controls and hope to implement a
 		 selectable toggle hardware option similar to Donkey 
   		 Kong TKG02/TKG04.
 
@@ -82,7 +82,7 @@ Dan Boris
   		 Shifts 24.7 through 27.7 degrees with 0.5 degree
 		 increments documented. 
    		-Phase Shift 26.2 degrees made active.
-     		-Fixed typo under 26.7 7$.
+     	-Fixed typo under 26.7 7$.
 
 2013/10/27 Robert Tuccitto
 		-Modernized screen parameters for NTSC & PAL.
@@ -95,7 +95,7 @@ Dan Boris
 
 2014/01/02 Robert Tuccitto
 		-Corrected joystick buttons assignment & minor
-                 palette notes cleanup.
+         palette notes cleanup.
 
 2014/01/09 Robert Tuccitto  
 		-Positional description for difficulty switches 
@@ -118,13 +118,13 @@ Dan Boris
 2014/08/25 Fabio Priuli
 		-Converted carts to be slot devices and cleaned up 
   		 the driver (removed the pokey, cleaned up rom 
-    		 regions, etc.)
+    	 regions, etc.)
 
 2017/07/14 Mike Saarna/Robert Tuccito   
 		-Converted to slotted controls and added support 
   		 for proline joysticks, vcs joysticks, paddles,
-    		 lightguns, keypads, driving wheels, cx22 trakballs, 
-      		 amiga mice, st mice/cx80. 
+    	 lightguns, keypads, driving wheels, cx22 trakballs, 
+      	 amiga mice, st mice/cx80. 
 
 2020/06/10 Mike Saarna/Robert Tuccitto 
 		-Implementation of XM control registers updated.
@@ -154,10 +154,10 @@ Dan Boris
 
 2023/08/23 Robert Tuccitto
 		-Palettes updated:
-		-fixed luma value correlation to hue begin point.
-		-improved duplication of hue behaviors according to temperature.
-		-fine adjustment to midrange hues.
-		-tweaked overall brightness balancing.
+			*fixed luma value correlation to hue begin point.
+			*improved duplication of hue behaviors according to temperature.
+			*fine adjustment to midrange hues.
+			*tweaked overall brightness balancing.
 
 ***************************************************************************/
 
@@ -697,7 +697,7 @@ the non-artifact colors.
 ***************************************************************************/
 
 #define NTSC_HUE0_PAL_HUE0 \
-    	rgb_t(0x00,0x00,0x00), rgb_t(0x0D,0x0D,0x0D), rgb_t(0x25,0x25,0x25), rgb_t(0x3A,0x3A,0x3A), \
+   	rgb_t(0x00,0x00,0x00), rgb_t(0x0D,0x0D,0x0D), rgb_t(0x25,0x25,0x25), rgb_t(0x3A,0x3A,0x3A), \
 	rgb_t(0x4D,0x4D,0x4D), rgb_t(0x5F,0x5F,0x5F), rgb_t(0x71,0x71,0x71), rgb_t(0x82,0x82,0x82), \
 	rgb_t(0x93,0x93,0x93), rgb_t(0xA3,0xA3,0xA3), rgb_t(0xB3,0xB3,0xB3), rgb_t(0xC3,0xC3,0xC3), \
 	rgb_t(0xD2,0xD2,0xD2), rgb_t(0xE1,0xE1,0xE1), rgb_t(0xF0,0xF0,0xF0), rgb_t(0xFF,0xFF,0xFF   )
