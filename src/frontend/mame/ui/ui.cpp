@@ -1442,7 +1442,7 @@ std::vector<ui::menu_item> mame_ui_manager::slider_init(running_machine &machine
 		std::string str = string_format(_("%1$s Brightness"), screen_desc);
 		sliders.push_back(slider_alloc(machine, SLIDER_ID_BRIGHTNESS + slider_index, str.c_str(), 100, 1000, 2000, 10, param));
 		str = string_format(_("%1$s Contrast"), screen_desc);
-		sliders.push_back(slider_alloc(machine, SLIDER_ID_CONTRAST + slider_index, str.c_str(), 100, 1000, 2000, 50, param));
+		sliders.push_back(slider_alloc(machine, SLIDER_ID_CONTRAST + slider_index, str.c_str(), 100, 1000, 2000, 10, param));
 		str = string_format(_("%1$s Gamma"), screen_desc);
 		sliders.push_back(slider_alloc(machine, SLIDER_ID_GAMMA + slider_index, str.c_str(), 100, 1000, 3000, 50, param));
 
