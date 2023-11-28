@@ -2,49 +2,57 @@
 // copyright-holders:Dan Boris, Fabio Priuli, Mike Saarna, Robert Tuccitto
 /***************************************************************************
 
-  Atari MARIA video emulation
+Atari MARIA video emulation.
 
+Dan Boris
 
-  - some history:
+History:
 
-    2014-12-01 Mike Saarna, Robert Tuccitto Implemented "colorburst kill" bit
-                of the MARIA CTRL register.
+2002/05/12 kubecj
+        -Added cases for 0x01-160A, 0x05-160B as stated by docs.
 
-    2014-10-05 Mike Saarna, Robert Tuccitto Last Line DMA value corrected
-                to 6. GCC and Atari docs both show a difference between
-                Other Line and Last Line as +6 at the lowest part of the
-                range.
-                Blank scanlines are drawn when DMA is off, like real
-                hardware.
-                If MARIA hits the DMA limit, the CPU doesn't run until
-                the next scanline.
+2002/05/13 kubecj
+        -Fixed 320C mode - displayed 2 pixels instead of one!
+        -Noticed that Jinks uses 0x02-320D mode, implemented the
+         mode - completely unsure if good!
+        -Implemented some Maria CTRL variables.
 
-    2014-09-03 Mike Saarna, Robert Tuccitto reorganized DMA penalties to
-                support new rendering timeout code.
+2002/05/14 kubecj
+        -Vblank dma stop fix.
 
-    2014-08-29 Mike Saarna Timeout rendering added.
+2003/06/23 ericball
+        -Kangaroo mode & 320 mode & other stuff.
 
-    2014-08-26 Fabio Priuli Converted to device
+2013/05/08 huygens
+        -Rewrite to emulate line ram buffers (mostly fixes Kung-Fu Master).
+        -Started DMA cycle stealing implementation.
 
-    2014-05-06 Mike Saarna Added interrupts to DMA cycle eating. Updates to
-                LL, OL, and spin accounting for HALT behavior.
+2014/03/24 Mike Saarna
+        -Fixed DMA regarding startup, shutdown and cycle stealing.
 
-    2014-03-24 Mike Saarna Fixed DMA regarding startup, shutdown and
-                            cycle stealing.
+2014/05/06 Mike Saarna
+        -Added interrupts to DMA cycle eating.
+        -Updates to LL, OL, and spin accounting for HALT behavior.
 
-    2013-05-08 huygens rewrite to emulate line ram buffers (mostly fixes Kung-Fu Master
-                            Started DMA cycle stealing implementation
+2014/08/26 Fabio Priuli
+        -Converted to device.
 
-    2003-06-23 ericball Kangaroo mode & 320 mode & other stuff
+2014/08/29 Mike Saarna
+        -Timeout rendering added.
 
-    2002-05-14 kubecj vblank dma stop fix
+2014/09/03 Mike Saarna/Robert Tuccitto
+        -Reorganized DMA penalties to support new rendering timeout code.
 
-    2002-05-13 kubecj   fixed 320C mode (displayed 2 pixels instead of one!)
-                            noticed that Jinks uses 0x02-320D mode
-                            implemented the mode - completely unsure if good!
-                            implemented some Maria CTRL variables
+2014/10/05 Mike Saarna/Robert Tuccitto
+        -Last Line DMA value corrected to 6. GCC and Atari docs both show
+         a difference between Other Line and Last Line as +6 at the lowest
+         part of the range.
+        -Blank scanlines are drawn when DMA is off, like real hardware.
+        -If MARIA hits the DMA limit, the CPU doesn't run until the next 
+         scanline.
 
-    2002-05-12 kubecj added cases for 0x01-160A, 0x05-160B as stated by docs
+2014/12/01 Mike Saarna/Robert Tuccitto
+        -Implemented "colorburst kill" bit of the MARIA CTRL register.
 
 ***************************************************************************/
 
