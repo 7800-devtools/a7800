@@ -165,6 +165,10 @@ Dan Boris
          intended graphic details, difference in shading, and color
          distinction is visible.
 
+2023/12/03 Robert Tuccitto
+        -PAL and NTSC entangled palettes separated.  Updated hue descriptions
+         to reflect their actual representation.
+
 ***************************************************************************/
 
 #include "emu.h"
