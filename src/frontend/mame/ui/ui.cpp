@@ -1453,13 +1453,13 @@ std::vector<ui::menu_item> mame_ui_manager::slider_init(running_machine &machine
 		//str = string_format(_("%1$s Horiz Position"), screen_desc);
 		str = string_format(_("%1$s Horizontal Position: Shift Left <-> Default <-> Shift Right"), screen_desc);
 		sliders.push_back(slider_alloc(machine, SLIDER_ID_XOFFSET + slider_index, str.c_str(), -500, defxoffset, 500, 1, param));
+		//str = string_format(_("%1$s Vert Stretch"), screen_desc);
+		str = string_format(_("%1$s Height: <-- Crop Less Lines | Crop More Lines -->"), screen_desc);
+		//sliders.push_back(slider_alloc(machine, SLIDER_ID_YSCALE + slider_index, str.c_str(), 500, defyscale, 1500, 2, param));
+		sliders.push_back(slider_alloc(machine, SLIDER_ID_YSCALE + slider_index, str.c_str(), 1000, defyscale, 1216, 9, param));
 		//str = string_format(_("%1$s Vert Position"), screen_desc);
 		str = string_format(_("%1$s Vertical Position: Shift Up <-> Default <-> Shift Down"), screen_desc);
 		sliders.push_back(slider_alloc(machine, SLIDER_ID_YOFFSET + slider_index, str.c_str(), -500, defyoffset, 500, 1, param));
-		//str = string_format(_("%1$s Vert Stretch"), screen_desc);
-		str = string_format(_("%1$s Height Lines Cropped: 0 <-> 8 <-> 16 <-> 24 <-> 32 <-> 40 <-> 48"), screen_desc);
-		//sliders.push_back(slider_alloc(machine, SLIDER_ID_YSCALE + slider_index, str.c_str(), 500, defyscale, 1500, 2, param));
-		sliders.push_back(slider_alloc(machine, SLIDER_ID_YSCALE + slider_index, str.c_str(), 1000, defyscale, 1216, 36, param));	
 		slider_index++;
 	}
 
