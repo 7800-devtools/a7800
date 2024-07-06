@@ -257,13 +257,13 @@ a6809                           //
 a7150                           //
 
 @source:a7800.cpp
-a7800							// Atari 7800 NTSC Cool
-a7800u1							// Atari 7800 NTSC Warm
-a7800u2							// Atari 7800 NTSC Hot
-a7800dev						// Atari 7800 NTSC Hot
+a7800							// Atari 7800 NTSC Hot
+a7800a1							// Atari 7800 NTSC Warm
+a7800a2							// Atari 7800 NTSC Cool
+a7800dev						// Atari 7800 NTSC Developer Mode
 a7800p							// Atari 7800 PAL Cool
-a7800pu1						// Atari 7800 PAL Warm
-a7800pu2						// Atari 7800 PAL Hot
+a7800pa1						// Atari 7800 PAL Warm
+a7800pa2						// Atari 7800 PAL Hot
 a7800pdev						// Atari 7800 PAL Developer Mode
 
 @source:aa310.cpp
