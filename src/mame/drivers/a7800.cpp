@@ -703,7 +703,7 @@ the non-artifact colors.
 ***************************************************************************/
 
 /***************************************************************************
-    26.7 PHASE SHIFT - PLUS from TREBORS PRO PALETTES V7
+    26.7 PHASE SHIFT - LUM3 from TREBORS PRO PALETTES V7
 ***************************************************************************/
 
 #define ntsc_hue0_warm \
@@ -953,7 +953,7 @@ PALETTE_INIT_MEMBER(a7800_state,a7800pa1)
 
 
 /***************************************************************************
-    25.7 PHASE SHIFT - PLUS from TREBORS PRO PALETTES V7
+    25.7 PHASE SHIFT - LUM3 from TREBORS PRO PALETTES V7
 ***************************************************************************/
 
 #define ntsc_hue0_cool \
@@ -1203,7 +1203,7 @@ PALETTE_INIT_MEMBER(a7800_state,a7800p)
 
 
 /***************************************************************************
-    27.7 PHASE SHIFT - PLUS from TREBORS PRO PALETTES V7
+    27.7 PHASE SHIFT - LUM3 from TREBORS PRO PALETTES V7
 ***************************************************************************/
 
 #define ntsc_hue0_hot \
